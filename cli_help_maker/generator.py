@@ -112,7 +112,6 @@ class HelpGenerator:
         argument_documented_prob: float = 0.1,
         option_documented_prob: float = 0.9,
         description_before: bool = True,
-        # description: bool = False,
         usage_pattern_capitalized: str = True,
         options_pattern_capitalized: str = True,
         number_of_commands: int = 0,  # TODO: Change to use a range -> int | list[int] = 1 | [1, 3]
@@ -323,7 +322,7 @@ class HelpGenerator:
 
     def maybe_add_description(self) -> str:
         if random.random() > 0.5:
-            return self.description() + "\n"
+            return self.description()
         return ""
 
     def add_program(self, prog_name: str) -> None:
@@ -475,7 +474,10 @@ class HelpGenerator:
 
         if self._description_before:
             # Write this to a function
-            self.help_message += self.maybe_add_description() + "\n"
+            desc = self.maybe_add_description()
+            if len(desc) > 1:
+                self.help_message += "\n"
+            self.help_message += desc + "\n"
 
         prog_name = self.program_name()
         self.add_programs(prog_name)
@@ -484,23 +486,10 @@ class HelpGenerator:
 
         if not self._description_before:
             # Write this to a function
-            self.help_message += self.maybe_add_description()
-
-        # The prior lines should be replace with the following:
-        # self.add_program(prog_name, subcommands=[""], options=[""], arguments=[""])
-
-        # for c in self.commands(total=self.number_of_commands):
-        #     self.help_message += " " + c
-
-        # if self._options_shortcut:
-        #     self.help_message += " \[options]"
-
-        # if self._option_argument_separator["separator"]:
-        #     sep = "--"
-        #     if self._option_argument_separator["required"]:
-        #         sep = do_optional(sep)
-
-        #     self.help_message += " " + sep
+            desc = self.maybe_add_description()
+            if len(desc) > 1:
+                self.help_message += "\n"
+            self.help_message += desc + "\n"
 
         # TODO: Review the arguments and options sections,
         # the names must be gathered from the variables 
@@ -511,7 +500,7 @@ class HelpGenerator:
             self.add_arguments_section()
 
         if self._options_section:
-            self.help_message += "\n" * 2
+            self.help_message += "\n" * 1
             self.add_options_section()
 
         return self.help_message
