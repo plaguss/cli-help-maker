@@ -14,7 +14,9 @@ https://arxiv.org/pdf/1207.2334.pdf
 
 import random
 import string
+from functools import wraps
 from itertools import accumulate
+from typing import Any, Callable
 from warnings import warn
 
 from lorem_text import lorem
@@ -153,6 +155,24 @@ def paragraph_length() -> int:
     )[0]
 
 
+def randomize(probability: float = 1) -> Any:
+    """Function decorator to apply the function to the element with the
+    probability given.
+    """
+
+    def maybe_apply(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            value = args[0]
+            if random.random() > (1 - probability):
+                value = func(*args, **kwargs)
+            return value
+
+        return wrapper
+
+    return maybe_apply
+
+
 def make_word() -> str:
     return "".join(random.choices(LETTERS, weights=LETTER_FREQUENCIES, k=word_length()))
 
@@ -262,21 +282,3 @@ def make_option(
             option += long_separator + value
 
     return option
-
-
-def make_program_inline(
-    prog_name: str = "hello",
-    subcommands: list[str] = [],
-    arguments: list[str] = [],
-    argumengs_style: str = "between_brackets",
-    options: list[str] = [],
-) -> str:
-    # If no commands are added (default) a list without content is added,
-    # otherwise each str represents a subcommand.
-    # Allows the creation of a program
-    # usage: git remote [-v | --verbose]
-    #    git remote add [-t <branch>] [-m <master>] [-f] [--mirror] <name> <url>
-    #    git remote rename <old> <new>
-    #    git remote rm <name>
-    # ...
-    return ""
