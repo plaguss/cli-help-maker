@@ -29,6 +29,7 @@ if __name__ == "__main__":
         argument_documented_prob=0.1,
         option_documented_prob=0.9,
         description_before=False,
+        program_description_prob=0.0,
         usage_pattern_capitalized=False,
         number_of_commands=1,
         number_of_options=4,

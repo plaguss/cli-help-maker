@@ -23,6 +23,7 @@ if __name__ == "__main__":
     generator = gen.HelpGenerator(
         indent_spaces=2,
         usage_section=True,
+        program_description_prob=0.,
         arguments_section=False,
         options_section=False,
         usage_pattern_capitalized=True,
