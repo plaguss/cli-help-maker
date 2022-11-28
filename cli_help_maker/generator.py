@@ -112,6 +112,7 @@ class HelpGenerator:
         argument_documented_prob: float = 0.1,
         option_documented_prob: float = 0.9,
         description_before: bool = True,
+        program_description_prob: float = 0.5,
         usage_pattern_capitalized: str = True,
         options_pattern_capitalized: str = True,
         number_of_commands: int = 0,  # TODO: Change to use a range -> int | list[int] = 1 | [1, 3]
@@ -179,6 +180,7 @@ class HelpGenerator:
         self._total_width = total_width
         self._option_documented_prob = option_documented_prob
         self._description_before = description_before
+        self._program_description_prob = program_description_prob  # Program description probability
         self._usage_pattern_capitalized = usage_pattern_capitalized
         self._options_pattern_capitalized = options_pattern_capitalized
         self._read_from_stdin = read_from_stdin
@@ -320,8 +322,8 @@ class HelpGenerator:
 
         return args
 
-    def maybe_add_description(self) -> str:
-        if random.random() > 0.5:
+    def _maybe_add_description(self) -> str:
+        if random.random() > (1 - self._program_description_prob):
             return self.description()
         return ""
 
@@ -465,6 +467,18 @@ class HelpGenerator:
             element += description
         return element
 
+    def _add_program_description(self) -> None:
+        """Add the program description (randomnly)
+        """
+        desc = self._maybe_add_description()
+        if len(desc) > 0:
+            if self._description_before:
+                msg = desc + "\n" * 2
+            else:
+                msg = "\n" + desc + "\n"
+
+            self.help_message += msg
+
     def sample(self) -> str:
         """Generates a sample help message
 
@@ -473,23 +487,13 @@ class HelpGenerator:
         """
 
         if self._description_before:
-            # Write this to a function
-            desc = self.maybe_add_description()
-            if len(desc) > 1:
-                self.help_message += "\n"
-            self.help_message += desc + "\n"
+            self._add_program_description()
 
         prog_name = self.program_name()
         self.add_programs(prog_name)
-        # self.help_message += usage_pattern(capitalized=self._usage_pattern_capitalized)
-        # self.help_message += prog_name
 
         if not self._description_before:
-            # Write this to a function
-            desc = self.maybe_add_description()
-            if len(desc) > 1:
-                self.help_message += "\n"
-            self.help_message += desc + "\n"
+            self._add_program_description()
 
         # TODO: Review the arguments and options sections,
         # the names must be gathered from the variables 
