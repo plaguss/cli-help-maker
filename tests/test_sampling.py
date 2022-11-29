@@ -6,7 +6,6 @@ random.seed(4657)
 import cli_help_maker.sampling as smpl
 
 
-
 def test_capitalize():
     assert smpl.capitalize("word", probability=1) == "Word"
     assert smpl.capitalize("word", probability=0) == "word"
