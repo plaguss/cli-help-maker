@@ -98,7 +98,7 @@ class HelpGenerator:
         self,
         indent_spaces: int = 2,
         prob_name_capitalized: float = 0,
-        options_style: dict = {},
+        options_style: dict = {},  # Not used for the moment, generated internally
         usage_section: bool = True,
         arguments_section: bool = False,
         arguments_header: bool = False,
@@ -265,19 +265,55 @@ class HelpGenerator:
         self._command_names = commands
         return commands
 
-    def option(self) -> str:
+    def option(self, in_section: bool = False) -> str:
         # TODO: The arguments must change depending on the place the function is
         # called.
-        return make_option(**self._options_style)
+        if in_section:
+            short = random.choice([True, False])
+            long = random.choice([True, False])
+            kwargs = {
+                "short": short,
+                "long": long,
+                "with_value": random.choice([True, False]),
+                "short_capitalized_prob": 0.1,
+                "long_capitalized_prob": 0,
+                "short_separator": " ",
+                "long_separator": "=",
+                "short_long_separator": random.choices([", ", " "]),
+                "probability_name_cap": 0,
+                "probability_value_cap": 0
+            }
 
-    def options(self, total: int = 0) -> list[str]:
+        else:
+            short = random.choice([True, False])
+            long = not short
+            kwargs = {
+                "short": short,
+                "long": long,
+                "with_value": random.choice([True, False]),
+                "short_capitalized_prob": 0.1,
+                "long_capitalized_prob": 0,
+                "short_separator": " ",
+                "long_separator": "=",
+                "short_long_separator": " ",  # Not used
+                "probability_name_cap": 0,
+                "probability_value_cap": 0
+            }
+
+        kwargs.update(**self._options_style)
+        return make_option(**kwargs)
+
+    def options(self, total: int = 0, in_section: bool = False) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
         be written in a separate section.
 
         Args:
-            total (int, optional): _description_. Defaults to 0.
+            total (int, optional): Number of options to generate. Defaults to 0.
+            in_section (bool, optional): Whether the options are generated
+                for a section or not. The arguments for the
+                generator are slightly different. Defaults to False.
 
         Returns:
             list[str]: _description_
@@ -288,7 +324,7 @@ class HelpGenerator:
         #             uch hdrai
         # -a, --alab  Ias roron tlce. Namdgt euct le. Sheg pwlnanhd mnesa eaelap
         #             tnarn. Beb ln trrrsu
-        options = [self.option() for _ in range(total)]
+        options = [self.option(in_section=in_section) for _ in range(total)]
         self._option_names = options
         return options
 
