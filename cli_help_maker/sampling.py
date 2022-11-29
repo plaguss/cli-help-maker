@@ -252,33 +252,54 @@ def make_option(
     long_capitalized_prob: float = 0,
     short_separator: str = " ",
     long_separator: str = "=",
-    short_long_separator: str = ",",
+    short_long_separator: str = ", ",
+    probability_name_cap: float = 0,
+    probability_value_cap: float = 0
 ):
     """Optional argument generator.
 
+    If short, long and with_value are True, only the short option will be
+    generated and returned.
+
     Args:
-        short (bool, optional): _description_. Defaults to True.
-        long (bool, optional): _description_. Defaults to True.
-        with_value (bool, optional): _description_. Defaults to False.
-        short_capitalized_prob (float, optional): _description_. Defaults to 0.1.
-        long_capitalized_prob (float, optional): _description_. Defaults to 0.
-        short_separator (str, optional): _description_. Defaults to " ".
-        long_separator (str, optional): _description_. Defaults to "=".
-        short_long_separator (str, optional): _description_. Defaults to ",".
+        short (bool, optional):
+            Add a short version (single dashed). Defaults to True.
+        long (bool, optional):
+            Add a long version (double dashed). Defaults to True.
+        with_value (bool, optional):
+            Add a default value for the . Defaults to False.
+        short_capitalized_prob (float, optional): 
+            Probability of having the argument capitalized. Defaults to 0.1.
+        long_capitalized_prob (float, optional): 
+            Equivalent to short_capitalized_prob for long option. Defaults to 0.
+        short_separator (str, optional):
+            Separator for the default value in the short option. Defaults to " ".
+        long_separator (str, optional):
+            Separator for the default value in the long option. Defaults to "=".
+        short_long_separator (str, optional):
+            Separator between both versions of an argument, i.e.
+            -o, --option. The usual values are ", " or " ". Defaults to ",".
+        probability_name_cap (float, optional):
+            Probability of the name of the option being capitalized. Defaults to 0.
+        probability_value_cap
+            Probability of the default value of the option being capitalized.
+            Defaults to 0.
     """
     option = ""
-    name = capitalize(make_word(), probability=0)
-    value = capitalize(make_word(), probability=1)
+    name = capitalize(make_word(), probability=probability_name_cap)
+    value = capitalize(make_word(), probability=probability_value_cap)
     if short:
         option += "-" + capitalize(name[0], short_capitalized_prob)
         if with_value:
             option += short_separator + value
+            return option
 
     if long:
         if short:
-            option += short_long_separator + " "
+            option += short_long_separator
         option += "--" + capitalize(name, long_capitalized_prob)
         if with_value:
             option += long_separator + value
+            return option
 
     return option
