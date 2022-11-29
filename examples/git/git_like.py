@@ -2,7 +2,9 @@
 https://github.com/jazzband/docopt-ng/blob/master/examples/git/git.py
 
 $ python examples/git/git_like.py
-
+Usage: vstsacmai arase [-g] [-o <aiuv-rr-b>] [--cria-tan] [--aeawol] [-u <cwti-ercp>]
+                       [-t] [--l] [--nmw-sried] [--tr] [--pn-aito] <utaem>
+                       [<rarboee-ope>]
 """
 
 from rich import print
@@ -21,7 +23,7 @@ if __name__ == "__main__":
         option_documented_prob=0.0,
         description_before=False,
         program_description_prob=0.0,
-        number_of_commands=0,
+        number_of_commands=1,
         number_of_options=10,
         options_shortcut=False,
         number_of_arguments=2,
