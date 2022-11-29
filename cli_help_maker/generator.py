@@ -5,7 +5,6 @@ Currently only docopt is allowed.
 
 import random
 import textwrap
-from functools import partial
 from textwrap import indent
 
 from .sampling import (
@@ -20,7 +19,9 @@ from .sampling import (
     randomize,
 )
 
-text_wrapper = textwrap.TextWrapper(width=80)
+text_wrapper = textwrap.TextWrapper(width=78)
+
+OPTIONS_SHORTCUT = " \[options]"
 
 
 def usage_pattern(capitalized: bool = True) -> str:
@@ -115,9 +116,9 @@ class HelpGenerator:
         program_description_prob: float = 0.5,
         usage_pattern_capitalized: str = True,
         options_pattern_capitalized: str = True,
-        number_of_commands: int = 0,  # TODO: Change to use a range -> int | list[int] = 1 | [1, 3]
-        number_of_arguments: int = 0,  # TODO: Change to use a range
-        number_of_options: int = 0,  # TODO: Change to use a range
+        number_of_commands: int | list[int] = 0,
+        number_of_arguments: int | list[int] = 0,
+        number_of_options: int | list[int] = 0,
         read_from_stdin: bool = False,
         option_argument_separator: dict[str, bool] = {
             "separator": False,
@@ -180,7 +181,8 @@ class HelpGenerator:
         self._total_width = total_width
         self._option_documented_prob = option_documented_prob
         self._description_before = description_before
-        self._program_description_prob = program_description_prob  # Program description probability
+        # Program description probability
+        self._program_description_prob = program_description_prob
         self._usage_pattern_capitalized = usage_pattern_capitalized
         self._options_pattern_capitalized = options_pattern_capitalized
         self._read_from_stdin = read_from_stdin
@@ -338,38 +340,40 @@ class HelpGenerator:
             number : int. Number of program written.
                 For the moment is a simple way of keeping track of the indentation.
         """
-        # TODO: 
-        # Control if textwrap.wrap should be used as in comments,
-        # may need a new argument from add_programs.
-        # 1) program name
         program = prog_name
-        self.help_message += prog_name
 
-        # 2) command (more than one)
-        cmds = self.commands()
+        cmds = self.commands(total=self.number_of_commands)
 
         for c in cmds:
             cmd = " " + c
             program += cmd
-            self.help_message += cmd
+
+        # For the length of the indentation, the relevant part are the program
+        # name and subcommands
+        subsequent_indent = (
+            len(program)
+            + len(usage_pattern(capitalized=self._usage_pattern_capitalized))
+            + 1
+        )
 
         if self._options_shortcut:
-            self.help_message += " \[options]"
+            program += OPTIONS_SHORTCUT
 
         if self._option_argument_separator["separator"]:
             sep = "--"
             if self._option_argument_separator["required"]:
                 sep = do_optional(sep)
 
-            self.help_message += " " + sep
+            program += " " + sep
 
         # 3) options
-        opts = self.options()
+        if not self._options_shortcut:
+            # With options shortcut, these get written directly in a section
+            opts = self.options(total=self.number_of_options)
 
-        for o in opts:
-            opt = " " + o
-            program += opt
-            self.help_message += opt
+            for o in opts:
+                opt = " " + o
+                program += opt
 
         # 4) arguments
         args = self.arguments(total=self.number_of_arguments)
@@ -377,7 +381,15 @@ class HelpGenerator:
         for a in args:
             arg = " " + a
             program += arg
-            self.help_message += arg
+
+        self.help_message += "\n".join(
+            textwrap.wrap(
+                program,
+                width=self._total_width,
+                initial_indent="",
+                subsequent_indent=" " * subsequent_indent,
+            )
+        )
 
     def add_programs(self, prog_name: str) -> None:
         usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
@@ -427,10 +439,8 @@ class HelpGenerator:
         opt_lengths = [len(o) for o in options]
         longest_opt = max(opt_lengths)
 
-        # TODO: Escribir como método
         for o, length in zip(options, opt_lengths):
             # Version withoud docstrings
-            # self.help_message += indent(opt, " " * self._indent_spaces) + "\n"
             opt = indent(o, " " * self._indent_spaces)
             opt = self._add_documentation(
                 opt, longest_opt, length, self._option_documented_prob
@@ -468,8 +478,7 @@ class HelpGenerator:
         return element
 
     def _add_program_description(self) -> None:
-        """Add the program description (randomnly)
-        """
+        """Add the program description (randomnly)"""
         desc = self._maybe_add_description()
         if len(desc) > 0:
             if self._description_before:
@@ -496,16 +505,16 @@ class HelpGenerator:
             self._add_program_description()
 
         # TODO: Review the arguments and options sections,
-        # the names must be gathered from the variables 
+        # the names must be gathered from the variables
         # _argument_names it they already appeared.
-
-        if self._arguments_section:
-            self.help_message += "\n" * 2
-            self.add_arguments_section()
 
         if self._options_section:
             self.help_message += "\n" * 1
             self.add_options_section()
+
+        if self._arguments_section:
+            self.help_message += "\n" * 2
+            self.add_arguments_section()
 
         return self.help_message
 
