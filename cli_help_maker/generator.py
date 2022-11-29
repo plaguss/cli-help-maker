@@ -266,6 +266,8 @@ class HelpGenerator:
         return commands
 
     def option(self) -> str:
+        # TODO: The arguments must change depending on the place the function is
+        # called.
         return make_option(**self._options_style)
 
     def options(self, total: int = 0) -> list[str]:
