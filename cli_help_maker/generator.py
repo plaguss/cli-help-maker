@@ -281,7 +281,7 @@ class HelpGenerator:
                 "long_separator": "=",
                 "short_long_separator": random.choices([", ", " "]),
                 "probability_name_cap": 0,
-                "probability_value_cap": 0
+                "probability_value_cap": 0,
             }
 
         else:
@@ -297,7 +297,7 @@ class HelpGenerator:
                 "long_separator": "=",
                 "short_long_separator": " ",  # Not used
                 "probability_name_cap": 0,
-                "probability_value_cap": 0
+                "probability_value_cap": 0,
             }
 
         kwargs.update(**self._options_style)
@@ -408,7 +408,7 @@ class HelpGenerator:
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
             # TODO: When called from the program generator,
-            # don't insert here the flags for the different type of 
+            # don't insert here the flags for the different type of
             # options
             # TODO: When created in a program, alwags call do_optional,
             # the brackets are used as a separator.

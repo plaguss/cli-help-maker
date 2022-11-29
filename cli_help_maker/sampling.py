@@ -210,19 +210,19 @@ def make_description(min_num_words: int = 2, max_num_words: int = 30) -> str:
     return lorem.words(num_words)
 
 
-def make_name(capitalized_prob: float = 0.5, num_words: int = 1) -> str:
-    """App name generator."""
-    name = ""
-    for i in range(num_words):
-        if i > 0:
-            name += " "
-
-        num_letters = name_length()
-        name += "".join(
-            random.choice(string.ascii_lowercase) for l in range(num_letters)
-        )
-
-    return capitalize(name, probability=capitalized_prob)
+def make_composed_word() -> str:
+    """Generator of composed words for arguments, with
+    made-up probabilities."""
+    return "-".join(
+        [
+            make_word()
+            for _ in range(
+                random.choices(
+                    population=range(1, 5), cum_weights=[0.6, 0.9, 0.99, 1]
+                )[0]
+            )
+        ]
+    )
 
 
 def make_argument(
@@ -236,7 +236,7 @@ def make_argument(
         warn(f"style not defined: {style}, set by default: 'between_brackets'")
         styler = argument_styles["between_brackets"]
 
-    arg = styler(capitalize(make_word(), probability=capitalized_prob))
+    arg = styler(capitalize(make_composed_word(), probability=capitalized_prob))
 
     if any_number:
         arg += "..."
@@ -254,12 +254,19 @@ def make_option(
     long_separator: str = "=",
     short_long_separator: str = ", ",
     probability_name_cap: float = 0,
-    probability_value_cap: float = 0
+    probability_value_cap: float = 0,
+    style: str = "between_brackets",
+    any_number: bool = False,
 ):
     """Optional argument generator.
 
     If short, long and with_value are True, only the short option will be
     generated and returned.
+
+    TODO:
+        Possibilities not developed yet:
+        - More than a single word for an argument name: [--no-replace-objects]
+        - Multiple possibilities: [-p | --paginate | -P | --no-pager]
 
     Args:
         short (bool, optional):
@@ -268,9 +275,9 @@ def make_option(
             Add a long version (double dashed). Defaults to True.
         with_value (bool, optional):
             Add a default value for the . Defaults to False.
-        short_capitalized_prob (float, optional): 
+        short_capitalized_prob (float, optional):
             Probability of having the argument capitalized. Defaults to 0.1.
-        long_capitalized_prob (float, optional): 
+        long_capitalized_prob (float, optional):
             Equivalent to short_capitalized_prob for long option. Defaults to 0.
         short_separator (str, optional):
             Separator for the default value in the short option. Defaults to " ".
@@ -281,13 +288,17 @@ def make_option(
             -o, --option. The usual values are ", " or " ". Defaults to ",".
         probability_name_cap (float, optional):
             Probability of the name of the option being capitalized. Defaults to 0.
-        probability_value_cap
+        probability_value_cap (float, optional)
             Probability of the default value of the option being capitalized.
             Defaults to 0.
+        style (str, optional). Argument passed to make_argument.
+        any_number (bool, optional). Argument passed to make_argument.
     """
     option = ""
-    name = capitalize(make_word(), probability=probability_name_cap)
-    value = capitalize(make_word(), probability=probability_value_cap)
+    name = capitalize(make_composed_word(), probability=probability_name_cap)
+    value = make_argument(
+        capitalized_prob=probability_value_cap, style=style, any_number=any_number
+    )
     if short:
         option += "-" + capitalize(name[0], short_capitalized_prob)
         if with_value:
