@@ -20,22 +20,8 @@ from cli_help_maker import generator as gen
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        indent_spaces=2,
-        prob_name_capitalized=0,
-        arguments_section=True,
-        options_section=True,
-        argument_style="all_caps",
-        argument_documented_prob=1.,
-        option_documented_prob=1.,
-        description_before=True,
-        usage_pattern_capitalized=False,
-        number_of_commands=0,
-        number_of_options=15,
-        number_of_arguments=1,
-    )
-    msg = generator.sample(
-    )
+    generator = gen.HelpGenerator()
+    msg = generator.sample()
     # PARA CONSEGUIR TODOS LOS ARGUMENTOS EN LA MISMA LINEA (same_line) UTILIZAR
     # TEXTWRAP INDENT, CON INDENT INICIAL DIFERENTE, DE FORMA QUE QUEDE ALINEADO
     # -> PARA HACER EL EJEMPLO DE quick_example.py PARTIR DE UNA FUNCIÓN
