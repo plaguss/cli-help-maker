@@ -371,6 +371,9 @@ class HelpGenerator:
         # 3) options
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
+            # TODO: When called from the program generator,
+            # don't insert here the flags for the different type of 
+            # options
             opts = self.options(total=self.number_of_options)
 
             for o in opts:
