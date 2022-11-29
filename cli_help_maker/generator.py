@@ -374,10 +374,12 @@ class HelpGenerator:
             # TODO: When called from the program generator,
             # don't insert here the flags for the different type of 
             # options
+            # TODO: When created in a program, alwags call do_optional,
+            # the brackets are used as a separator.
             opts = self.options(total=self.number_of_options)
 
             for o in opts:
-                opt = " " + o
+                opt = " " + do_optional(o)
                 program += opt
 
         # 4) arguments
