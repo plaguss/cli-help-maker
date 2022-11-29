@@ -2,16 +2,6 @@
 https://github.com/jazzband/docopt-ng/blob/master/examples/quick_example.py
 
 $ python examples/quick_example_like.py
-
-usage: ybde hd [options] [--] <lh>
-
-    -e, --eleen  Llhnirsue desepte rhpoddjw. Aa ep ssice tnnch uxignn clpe
-                 tts eucafe enct
-    -o, --oefl   Rnsrh sope noei eoan rerimd naok teoaie nrano. Ka r. Ern
-                 etint p
-    -n, --nnsge
-    -o, --os     Yyocvi aae oaedeae aahdu roueeriiy dstltno og hr
-
 """
 
 from rich import print
@@ -28,8 +18,8 @@ if __name__ == "__main__":
         options_section=False,
         usage_pattern_capitalized=True,
         number_of_commands=2,
-        number_of_options=5,
-        number_of_arguments=3,
+        number_of_options=[1, 3],
+        number_of_arguments=[1, 2],
         argument_style="between_brackets",
         exclusive_programs=3
     )
