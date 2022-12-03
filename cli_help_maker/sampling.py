@@ -184,7 +184,7 @@ def make_sentence():
 
 
 def make_paragraph():
-    return ". ".join([make_sentence() for _ in range(paragraph_length())])[:-1]
+    return ". ".join([make_sentence() for _ in range(paragraph_length())])[:-1] + "."
 
 
 def name_length(min_letters: int = 2, max_letters: int = 10) -> int:
@@ -218,7 +218,7 @@ def make_composed_word() -> str:
             make_word()
             for _ in range(
                 random.choices(
-                    population=range(1, 5), cum_weights=[0.6, 0.9, 0.99, 1]
+                    population=range(1, 5), cum_weights=[0.6, 0.95, 0.99, 1]
                 )[0]
             )
         ]
