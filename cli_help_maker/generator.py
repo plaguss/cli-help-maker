@@ -328,6 +328,9 @@ class HelpGenerator:
             }
 
         kwargs.update(**self._options_style)
+
+        # TODO: ADD EACH OPTION CREATED TO THE LIST OF _option_names, SAME WITH ARGUMENTS
+
         return make_option(**kwargs)
 
     def options(self, total: int = 0, in_section: bool = False) -> list[str]:
@@ -670,7 +673,6 @@ class HelpGenerator:
                 capitalized=self._arguments_pattern_capitalized,
                 documented_prob=self._argument_documented_prob,
             )
-            # self.add_arguments_section()
 
         if self._options_section:
             self.help_message += "\n" * 1
@@ -681,7 +683,6 @@ class HelpGenerator:
                 capitalized=self._options_pattern_capitalized,
                 documented_prob=self._option_documented_prob,
             )
-            # self.add_options_section()
 
         return self.help_message
 
