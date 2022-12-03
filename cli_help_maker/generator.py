@@ -7,17 +7,7 @@ import random
 import textwrap
 from textwrap import indent
 
-from .sampling import (
-    argument_styles,
-    capitalize,
-    make_argument,
-    make_description,
-    make_name,
-    make_option,
-    make_paragraph,
-    make_word,
-    randomize,
-)
+from .sampling import capitalize, make_argument, make_option, make_paragraph, make_word
 
 text_wrapper = textwrap.TextWrapper(width=78)
 
@@ -31,11 +21,26 @@ def usage_pattern(capitalized: bool = True) -> str:
     return usage
 
 
-def options_pattern(capitalized: bool = True) -> str:
-    options = "options:"
+def section_pattern(section: str | None = "options", capitalized: bool = True) -> str:
+    """Creates a section header.
+    
+    In general, the possible sections are `Arguments` or `Options`,
+    but for example git has personalized headers on their sections.
+
+    Args:
+        section (str or None, optional): _description_. Defaults to 2.
+        capitalized (float, optional): _description_. Defaults to 0.
+    
+    """
+    if not section:
+        section = make_word() + ":"
+    else:
+        section += ":"
+
     if capitalized:
-        return options.capitalize()
-    return options
+        return section.capitalize()
+
+    return section
 
 
 def do_optional(content: str) -> str:
@@ -91,7 +96,12 @@ class HelpGenerator:
     and arguments would be used for each exclusive program.
 
     TODO:
-        Change description_before to a tuple of position and probability
+        - Change description_before to a tuple of position and probability
+        - The option description is positioned starting at 2/3 the length
+            decided for the console. The description must be adjusted
+            if the arguments are longer.
+        - Add arguments and options to a list, in case they are written inline
+        and then documented on its section.
     """
 
     def __init__(
@@ -197,6 +207,14 @@ class HelpGenerator:
         self.number_of_arguments = number_of_arguments
         self.number_of_options = number_of_options
 
+        # Variables used to control the proper positioning
+        # of the docs
+        self._max_level_option_docs = int(1 / 3 * self._total_width)
+        self._remaining_space_option_docs = int(
+            self._total_width - self._max_level_option_docs
+        )
+        self._docs_limited = False
+
     @property
     def help_message(self) -> str:
         """Anytime the message is updated, the current lenght
@@ -238,8 +256,12 @@ class HelpGenerator:
     def _check_number_of_elements(self, number: int | list[int]) -> tuple[int, int]:
         if isinstance(number, int):
             l, h = number, number
-        elif isinstance(number, list) and len(number) == 2:
-            l, h = number[0], number[1]
+        elif isinstance(number, list):
+            if len(number) == 1:
+                l, h = number, number
+            else:
+            #  and len(number) == 2:
+                l, h = number[0], number[1]
         else:
             raise ValueError(f"Must be an int or a list of 2 ints")
         return l, h
@@ -282,6 +304,7 @@ class HelpGenerator:
                 "short_long_separator": random.choices([", ", " "]),
                 "probability_name_cap": 0,
                 "probability_value_cap": 0,
+                "style": random.choice(["between_brackets", "all_caps"]),
             }
 
         else:
@@ -298,6 +321,7 @@ class HelpGenerator:
                 "short_long_separator": " ",  # Not used
                 "probability_name_cap": 0,
                 "probability_value_cap": 0,
+                "style": random.choice(["between_brackets", "all_caps"]),
             }
 
         kwargs.update(**self._options_style)
@@ -407,11 +431,6 @@ class HelpGenerator:
         # 3) options
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
-            # TODO: When called from the program generator,
-            # don't insert here the flags for the different type of
-            # options
-            # TODO: When created in a program, alwags call do_optional,
-            # the brackets are used as a separator.
             opts = self.options(total=self.number_of_options)
 
             for o in opts:
@@ -451,45 +470,76 @@ class HelpGenerator:
 
     def add_arguments_section(self) -> None:
         # FIXME, DOESN'T WORK
-        arguments = self.arguments(total=self._number_of_arguments)
+        arguments = self.arguments(total=self.number_of_arguments)
         # FIXME: The arguments only are documented if they are written
         # in a separate section
-        if len(arguments) != 0:
-            arg_lengths = [len(a) for a in arguments]
-            longest_arg = max(arg_lengths)
-
-            for a, length in zip(arguments, arg_lengths):
-                if self._arguments_in_section:
-                    self._add_documentation(
-                        a, longest_arg, length, self._argument_documented_prob
-                    )
-
-                self.help_message += " " + a + "\n"
-
-    def add_options_section(self) -> None:
-        # TODO: Rewrite everything related to options here.
-        options = self.options(total=self.number_of_options)
-
-        if len(options) > 0:
-            if self._options_header:
-                self.help_message += options_pattern(
+        if len(arguments) > 0:
+            if self._arguments_header:
+                self.help_message += section_pattern(
+                    "arguments",  # TODO: To allow using the function as defined, this must be an input
                     capitalized=self._options_pattern_capitalized
                 )
                 self.help_message += "\n"
 
-        # When adding the options, check the max length of them and add
-        # the longest word in chars plus two if a description is given.
-        opt_lengths = [len(o) for o in options]
-        longest_opt = max(opt_lengths)
+            arg_lengths = [len(o) + self._indent_spaces + 2 for o in arguments]
+            longest_arg = max(arg_lengths)
 
-        for o, length in zip(options, opt_lengths):
-            # Version withoud docstrings
-            opt = indent(o, " " * self._indent_spaces)
-            opt = self._add_documentation(
-                opt, longest_opt, length, self._option_documented_prob
-            )
+            if any(l > self._max_level_option_docs for l in arg_lengths):
+                self._docs_limited = True
+                longest_arg = self._max_level_option_docs
 
-            self.help_message += opt + "\n"
+            for a, length in zip(arguments, arg_lengths):
+                arg = indent(a, " " * self._indent_spaces)
+                # if self._arguments_in_section:
+                #     self._add_documentation(
+                #         arg, longest_arg, length, self._argument_documented_prob
+                #     )
+                arg = self._add_documentation(
+                    arg,
+                    longest_arg,
+                    length,
+                    self._option_documented_prob,
+                )
+
+                self.help_message += arg + "\n"
+                # self.help_message += " " + a + "\n"
+            self._docs_limited = False
+
+    def add_options_section(self) -> None:
+        """Adds the options on its own section, where they can be documented."""
+        options = self.options(total=self.number_of_options)
+
+        if len(options) > 0:
+            if self._options_header:
+                self.help_message += section_pattern(
+                    "options",
+                    capitalized=self._options_pattern_capitalized
+                )
+                self.help_message += "\n"
+
+            opt_lengths = [len(o) + self._indent_spaces + 2 for o in options]
+            longest_opt = max(opt_lengths)
+
+            if any(l > self._max_level_option_docs for l in opt_lengths):
+                self._docs_limited = True
+                longest_opt = self._max_level_option_docs
+
+            for o, length in zip(options, opt_lengths):
+                opt = indent(o, " " * self._indent_spaces)
+                opt = self._add_documentation(
+                    opt,
+                    longest_opt,
+                    length,
+                    self._option_documented_prob,
+                )
+
+                self.help_message += opt + "\n"
+            self._docs_limited = False
+
+    def _add_section(self) -> None:
+        """add_options_section and add_arguments_section can be generalized in this function
+        with proper arguments. """
+        raise NotImplementedError
 
     def _add_documentation(
         self, element: str, longest_elem: int, length: int, probability: float
@@ -507,16 +557,38 @@ class HelpGenerator:
             str: _description_
         """
         if random.random() > (1 - probability):
-            indent_level = longest_elem - length + 2
-            subsequent_indent_length = longest_elem + 2 + self._indent_spaces
+            next_line = False
+            if length > longest_elem:
+                next_line = True
+                length = longest_elem
+
+            if self._docs_limited and next_line:
+                element += "\n"
+                initial_indent = subsequent_indent = self._max_level_option_docs
+            else:
+                initial_indent = longest_elem - length + 2
+                subsequent_indent = longest_elem
 
             wp = textwrap.TextWrapper(
-                width=self._total_width - subsequent_indent_length,
-                initial_indent=" " * indent_level,
-                subsequent_indent=" " * subsequent_indent_length,
+                width=self._total_width - self._indent_spaces,
+                initial_indent=" " * initial_indent,
+                subsequent_indent=" " * subsequent_indent,
             )
             docs = make_paragraph()
-            description = "\n".join(wp.wrap(docs))
+            pieces = wp.wrap(docs)
+            # TODO: Not controlled yet
+            # To control the length of the first line,
+            # otherwise, given the smaller initial indent, doesn't
+            # know the total length and the content is displaced to the right.
+            # The first line is splitted to allow TextWrapper to wrap it correctly.
+            # if len(pieces[0]) > (self._total_width - self._max_level_option_docs):
+            #     pieces_ = [pieces[0][:self._remaining_space_option_docs],  " " * subsequent_indent + pieces[0][self._remaining_space_option_docs:]]
+            #     if len(pieces) > 1:
+            #         pieces = pieces_ + pieces[1:]
+            #     else:
+            #         pieces = pieces_
+            description = "\n".join(pieces)
+            # description = wp.fill(docs)
             element += description
         return element
 
@@ -551,13 +623,13 @@ class HelpGenerator:
         # the names must be gathered from the variables
         # _argument_names it they already appeared.
 
-        if self._options_section:
-            self.help_message += "\n" * 1
-            self.add_options_section()
-
         if self._arguments_section:
             self.help_message += "\n" * 2
             self.add_arguments_section()
+
+        if self._options_section:
+            self.help_message += "\n" * 1
+            self.add_options_section()
 
         return self.help_message
 
