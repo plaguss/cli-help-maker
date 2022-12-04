@@ -120,7 +120,7 @@ class HelpGenerator:
         arguments_in_section: bool = False,
         options_documented: bool = False,
         total_width: int = 78,
-        argument_documented_prob: float = 0.1,
+        argument_documented_prob: float = 0.9,
         option_documented_prob: float = 0.9,
         description_before: bool = True,
         program_description_prob: float = 0.5,
@@ -300,6 +300,14 @@ class HelpGenerator:
             return commands
 
     def _option(self, in_section: bool = False) -> str:
+        """Creates an option for the message.
+
+        Args:
+            in_section (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            str: _description_
+        """
         # TODO: The arguments must change depending on the place the function is
         # called.
         if in_section:
@@ -338,9 +346,11 @@ class HelpGenerator:
 
         kwargs.update(**self._options_style)
 
-        # TODO: ADD EACH OPTION CREATED TO THE LIST OF _option_names, SAME WITH ARGUMENTS
+        option = make_option(**kwargs)
+        # TODO: Consider using only the long name if available.
+        self._option_names.append(option)
 
-        return make_option(**kwargs)
+        return option
 
     def _options(self, total: int = 0, in_section: bool = False) -> list[str]:
         """Adds options to the help message.
@@ -364,7 +374,6 @@ class HelpGenerator:
         # -a, --alab  Ias roron tlce. Namdgt euct le. Sheg pwlnanhd mnesa eaelap
         #             tnarn. Beb ln trrrsu
         options = [self._option(in_section=in_section) for _ in range(total)]
-        self._option_names = options
         return options
 
     def _argument(self, optional_probability: float = 0.5) -> str:
@@ -378,6 +387,7 @@ class HelpGenerator:
             str: argument name
         """
         arg = make_argument(capitalized_prob=0, style=self._argument_style)
+        self._argument_names.append(arg)
         if random.random() > optional_probability:
             arg = do_optional(arg)
 
@@ -394,7 +404,7 @@ class HelpGenerator:
         """
         args = [self._argument() for _ in range(total)]
         # Store the argument names in case they are documented later.
-        self._argument_names += args
+        # self._argument_names += args
 
         if self._argument_repeated:
             args[-1] = args[-1] + "..."
@@ -612,9 +622,15 @@ class HelpGenerator:
         # _argument_names it they already appeared.
 
         if self._arguments_section:
-            self.help_message += "\n" * 1
+            self.help_message += "\n"
+            # If the arguments were created when calling _add_programs,
+            # get them from the list of names. The same applies to the options.
+            if self._argument_names:
+                arguments = self._argument_names
+            else:
+                arguments = self._arguments(total=self.number_of_arguments)
             self._add_section(
-                elements=self._arguments(total=self.number_of_arguments),
+                elements=arguments,
                 has_header=self._arguments_header,
                 section_name="arguments",
                 capitalized=self._arguments_pattern_capitalized,
@@ -622,9 +638,13 @@ class HelpGenerator:
             )
 
         if self._options_section:
-            self.help_message += "\n" * 1
+            self.help_message += "\n"
+            if self._option_names:
+                options = self._option_names
+            else:
+                options = self._options(total=self.number_of_options)
             self._add_section(
-                elements=self._options(total=self.number_of_options),
+                elements=options,
                 has_header=self._options_header,
                 section_name="options",
                 capitalized=self._options_pattern_capitalized,
