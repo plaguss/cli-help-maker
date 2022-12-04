@@ -1,7 +1,27 @@
 """Example script generating a message similar to:
 https://github.com/jazzband/docopt-ng/blob/master/examples/quick_example.py
 
-$ python examples/quick_example_like.py
+$ python examples/arguments_example_like.py 
+Usage: 
+  itetoia od n [-m <hroivwek>] [-o CE] CUIR-AOO
+  itetoia imgad nhl [-a <nce-ustn>] [--nth] [--pave=BLET-EIITOMNFEO] [CHKN]
+
+Fn eouho bwxs ocolioar asrie la. Ww u.
+
+Arguments:
+  CUIR-AOO  Uvfa rf au. Iwi mlmrveoe. Tnovvr omd rore.
+  CHKN      Eteo eeeas raabl stin dld utl.
+
+Options:
+  -m <hroivwek>           Osn dga zuysm dtr. Opnnmoa amsc nadtee yyni ieccb sn.
+  -o CE                   Sju ten rece rstg pc. Ag irek lsrhscan. Bublfie reic oc
+                          ntfdd fpki rdrno rccnb. Dics coene.
+  -a <nce-ustn>           Frr sefh sat vtri tthc. Vengtd sgrlh. Aele dlrfceagcu. Meor aemra
+                          ok. Hn oe uoaityn alht lllk. Irn sol.
+  --nth                   Israwo lbu lpie onhc rcaerrrs. Yrd ru peio.
+  --pave=BLET-EIITOMNFEO  Utei s ttht dehrid tcu uap cfyoetri soylcrnosdioirp. Eieao om ty. Npoei
+                          utoge.
+
 """
 
 from rich import print
@@ -27,8 +47,4 @@ if __name__ == "__main__":
         exclusive_programs=2
     )
     msg = generator.sample()
-    # PARA CONSEGUIR TODOS LOS ARGUMENTOS EN LA MISMA LINEA (same_line) UTILIZAR
-    # TEXTWRAP INDENT, CON INDENT INICIAL DIFERENTE, DE FORMA QUE QUEDE ALINEADO
-    # -> PARA HACER EL EJEMPLO DE quick_example.py PARTIR DE UNA FUNCIÓN
-    # QUE APILE LOS PROGRAMAS COMPLETOS.
     print(msg)

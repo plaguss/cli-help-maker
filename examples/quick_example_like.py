@@ -2,6 +2,11 @@
 https://github.com/jazzband/docopt-ng/blob/master/examples/quick_example.py
 
 $ python examples/quick_example_like.py
+Usage: 
+  tn sela ianlh [-e <oo>] [-t AYL-MST] [-p] <dttl>
+  tn nnrne iro [--adrvni=HALMALE-DC] [--aiv-ce] <cbwn-hudv-egshm>
+  tn orn iiihigeycu [-M <rsa-ost>] [<qoti>]
+
 """
 
 from rich import print

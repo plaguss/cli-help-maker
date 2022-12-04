@@ -32,7 +32,7 @@ if __name__ == "__main__":
         program_description_prob=0.0,
         usage_pattern_capitalized=False,
         number_of_commands=1,
-        number_of_options=4,
+        number_of_options=13,
         option_argument_separator={
             "separator": True,
             "required": True,
@@ -40,12 +40,6 @@ if __name__ == "__main__":
         options_shortcut=True,
         number_of_arguments=1,
         arguments_same_line=True
-
     )
-    msg = generator.sample(
-    )
-    # PARA CONSEGUIR TODOS LOS ARGUMENTOS EN LA MISMA LINEA (same_line) UTILIZAR
-    # TEXTWRAP INDENT, CON INDENT INICIAL DIFERENTE, DE FORMA QUE QUEDE ALINEADO
-    # -> PARA HACER EL EJEMPLO DE quick_example.py PARTIR DE UNA FUNCIÓN
-    # QUE APILE LOS PROGRAMAS COMPLETOS.
+    msg = generator.sample()
     print(msg)
