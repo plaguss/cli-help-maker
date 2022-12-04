@@ -257,6 +257,10 @@ class HelpGenerator:
         self._number_of_options = lambda: random.randint(l, h)
 
     def _check_number_of_elements(self, number: int | list[int]) -> tuple[int, int]:
+        """Checks the inputs given on number of commands or options.
+        
+        This arguments are expected to be an int, a list with one or two ints.
+        """
         if isinstance(number, int):
             l, h = number, number
         elif isinstance(number, list):
@@ -269,16 +273,18 @@ class HelpGenerator:
             raise ValueError(f"Must be an int or a list of 2 ints")
         return l, h
 
-    def description(self) -> str:
+    def _description(self) -> str:
         desc = make_paragraph()
         return "\n".join(text_wrapper.wrap(desc))
 
-    def program_name(self) -> str:
+    def _program_name(self) -> str:
         """Returns a name for the app."""
         return capitalize(make_word(), probability=self._prob_name_capitalized)
 
-    def commands(self, total: int = 0) -> list[str]:
+    def _commands(self, total: int = 0) -> list[str]:
         """Returns commands for the app.
+
+        The commands are generated once, and 
 
         i.e. `git add`, `git commit`, ...
 
@@ -286,11 +292,14 @@ class HelpGenerator:
         line as the Usage: , otherwise it is written in the next line, using the
         indentation level chosen.
         """
-        commands = [self.program_name() for _ in range(total)]
-        self._command_names = commands
-        return commands
+        if self._command_names:
+            return self._command_names
+        else:
+            commands = [self._program_name() for _ in range(total)]
+            self._command_names = commands
+            return commands
 
-    def option(self, in_section: bool = False) -> str:
+    def _option(self, in_section: bool = False) -> str:
         # TODO: The arguments must change depending on the place the function is
         # called.
         if in_section:
@@ -333,7 +342,7 @@ class HelpGenerator:
 
         return make_option(**kwargs)
 
-    def options(self, total: int = 0, in_section: bool = False) -> list[str]:
+    def _options(self, total: int = 0, in_section: bool = False) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
@@ -354,11 +363,11 @@ class HelpGenerator:
         #             uch hdrai
         # -a, --alab  Ias roron tlce. Namdgt euct le. Sheg pwlnanhd mnesa eaelap
         #             tnarn. Beb ln trrrsu
-        options = [self.option(in_section=in_section) for _ in range(total)]
+        options = [self._option(in_section=in_section) for _ in range(total)]
         self._option_names = options
         return options
 
-    def argument(self, optional_probability: float = 0.5) -> str:
+    def _argument(self, optional_probability: float = 0.5) -> str:
         """Creates an argument for a program.
 
         Args:
@@ -374,7 +383,7 @@ class HelpGenerator:
 
         return arg
 
-    def arguments(self, total: int = 0) -> list[str]:
+    def _arguments(self, total: int = 0) -> list[str]:
         """Generates a list of arguments. The last one can be repeated
 
         Args:
@@ -383,7 +392,7 @@ class HelpGenerator:
         Returns:
             list[str]: _description_
         """
-        args = [self.argument() for _ in range(total)]
+        args = [self._argument() for _ in range(total)]
         # Store the argument names in case they are documented later.
         self._argument_names += args
 
@@ -394,10 +403,10 @@ class HelpGenerator:
 
     def _maybe_add_description(self) -> str:
         if random.random() > (1 - self._program_description_prob):
-            return self.description()
+            return self._description()
         return ""
 
-    def add_program(self, prog_name: str) -> None:
+    def _add_program(self, prog_name: str) -> None:
         """Single line program generator.
 
         Uses the program name as this may be reused.
@@ -410,7 +419,7 @@ class HelpGenerator:
         """
         program = prog_name
 
-        cmds = self.commands(total=self.number_of_commands)
+        cmds = self._commands(total=self.number_of_commands)
 
         for c in cmds:
             cmd = " " + c
@@ -437,14 +446,14 @@ class HelpGenerator:
         # 3) options
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
-            opts = self.options(total=self.number_of_options)
+            opts = self._options(total=self.number_of_options)
 
             for o in opts:
                 opt = " " + do_optional(o)
                 program += opt
 
         # 4) arguments
-        args = self.arguments(total=self.number_of_arguments)
+        args = self._arguments(total=self.number_of_arguments)
 
         for a in args:
             arg = " " + a
@@ -459,7 +468,7 @@ class HelpGenerator:
             )
         )
 
-    def add_programs(self, prog_name: str) -> None:
+    def _add_programs(self, prog_name: str) -> None:
         usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
         self.help_message += usage
 
@@ -471,70 +480,8 @@ class HelpGenerator:
 
         for _ in range(self._exclusive_programs):
             self.help_message += " " * indent_level
-            self.add_program(prog_name)
+            self._add_program(prog_name)
             self.help_message += "\n"
-
-    def add_arguments_section(self) -> None:
-        arguments = self.arguments(total=self.number_of_arguments)
-
-        if len(arguments) > 0:
-            if self._arguments_header:
-                self.help_message += section_pattern(
-                    "arguments",  # TODO: To allow using the function as defined, this must be an input
-                    capitalized=self._options_pattern_capitalized,
-                )
-                self.help_message += "\n"
-
-            arg_lengths = [len(o) + self._indent_spaces + 2 for o in arguments]
-            longest_arg = max(arg_lengths)
-
-            if any(l > self._max_level_option_docs for l in arg_lengths):
-                self._docs_limited = True
-                longest_arg = self._max_level_option_docs
-
-            for a, length in zip(arguments, arg_lengths):
-                arg = indent(a, " " * self._indent_spaces)
-
-                arg = self._add_documentation(
-                    arg,
-                    longest_arg,
-                    length,
-                    self._option_documented_prob,
-                )
-
-                self.help_message += arg + "\n"
-
-            self._docs_limited = False
-
-    def add_options_section(self) -> None:
-        """Adds the options on its own section, where they can be documented."""
-        options = self.options(total=self.number_of_options)
-
-        if len(options) > 0:
-            if self._options_header:
-                self.help_message += section_pattern(
-                    "options", capitalized=self._options_pattern_capitalized
-                )
-                self.help_message += "\n"
-
-            opt_lengths = [len(o) + self._indent_spaces + 2 for o in options]
-            longest_opt = max(opt_lengths)
-
-            if any(l > self._max_level_option_docs for l in opt_lengths):
-                self._docs_limited = True
-                longest_opt = self._max_level_option_docs
-
-            for o, length in zip(options, opt_lengths):
-                opt = indent(o, " " * self._indent_spaces)
-                opt = self._add_documentation(
-                    opt,
-                    longest_opt,
-                    length,
-                    self._option_documented_prob,
-                )
-
-                self.help_message += opt + "\n"
-            self._docs_limited = False
 
     def _add_section(
         self,
@@ -605,7 +552,7 @@ class HelpGenerator:
 
             if self._docs_limited and next_line:
                 element += "\n"
-                initial_indent = subsequent_indent = self._max_level_option_docs
+                initial_indent = subsequent_indent = self._max_level_docs
             else:
                 initial_indent = longest_elem - length + 2
                 subsequent_indent = longest_elem
@@ -654,8 +601,8 @@ class HelpGenerator:
         if self._description_before:
             self._add_program_description()
 
-        prog_name = self.program_name()
-        self.add_programs(prog_name)
+        prog_name = self._program_name()
+        self._add_programs(prog_name)
 
         if not self._description_before:
             self._add_program_description()
@@ -667,7 +614,7 @@ class HelpGenerator:
         if self._arguments_section:
             self.help_message += "\n" * 1
             self._add_section(
-                elements=self.arguments(total=self.number_of_arguments),
+                elements=self._arguments(total=self.number_of_arguments),
                 has_header=self._arguments_header,
                 section_name="arguments",
                 capitalized=self._arguments_pattern_capitalized,
@@ -677,7 +624,7 @@ class HelpGenerator:
         if self._options_section:
             self.help_message += "\n" * 1
             self._add_section(
-                elements=self.options(total=self.number_of_options),
+                elements=self._options(total=self.number_of_options),
                 has_header=self._options_header,
                 section_name="options",
                 capitalized=self._options_pattern_capitalized,
@@ -692,17 +639,23 @@ class HelpGenerator:
         return ("Help message", [(1, 3, "ARGUMENT")])
 
 
-def options_shortcut(capitalized_probability: float = 0.0) -> str:
+def options_shortcut(capitalized_probability: float = 0.0, all_caps: bool = False) -> str:
     """Returns the shortcut for any options.
 
     Args:
-        capitalized_probability (float, optional): _description_. Defaults to 0.01.
+        capitalized_probability (float, optional): Probability of returning
+            the first capital letter. Defaults to 0.
+        all_caps (bool, optional): If True, all the letters are in uppercase.
+            For example, click uses this option. Defaults to False.
 
     Returns:
-        str: [options] or [OPTIONS] with `capitalized_probability`.
+        str: [options] section.
 
     Note:
         https://github.com/jazzband/docopt-ng
     """
     options = capitalize("options", probability=capitalized_probability)
-    return f"\[{options}]"
+    shortcut = f"\[{options}]"
+    if all_caps:
+        return shortcut.upper()
+    return shortcut
