@@ -265,7 +265,6 @@ def make_option(
 
     TODO:
         Possibilities not developed yet:
-        - More than a single word for an argument name: [--no-replace-objects]
         - Multiple possibilities: [-p | --paginate | -P | --no-pager]
 
     Args:
@@ -296,6 +295,13 @@ def make_option(
     """
     option = ""
     name = capitalize(make_composed_word(), probability=probability_name_cap)
+
+    if len(name) == 1:
+        # In case the name generated has only one letter,
+        # force it to be only a short option.
+        short = True
+        long = False
+
     value = make_argument(
         capitalized_prob=probability_value_cap, style=style, any_number=any_number
     )
