@@ -69,7 +69,7 @@ class HelpGenerator:
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
         arguments_same_line: bool = True,  # What is this used for?
-        options_style: dict = {},  # Not used for the moment, generated internally
+        options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
         options_documented: bool = False,
@@ -123,6 +123,8 @@ class HelpGenerator:
                 be determined via the probability of the elements being optional.
                 A list with a range of [0, 2] means at most 2 elements could
                 be grouped.
+            options_style (dict). Used to pass determined options' arguments instead
+                of taking them randomly.
             exclusive_programs (int): Number of exclusive programs, according
                 to the usage pattern. When only one is given, a single program
                 definition occurs. Used to differentiate between different subcommands
@@ -484,11 +486,16 @@ class HelpGenerator:
             self.help_message += "\n"
 
         if self._exclusive_programs == 1:
-            add_prog(indent_level, prog_name, self._options_section)
+            if self._usage_section:
+                level = indent_level
+            else:
+                level = 0
+
+            add_prog(level, prog_name, self._options_section)
 
         elif self._exclusive_programs > 1:
             for i in range(self._exclusive_programs):
-                level = 0 if i == 0 else indent_level
+                level = 0 if (i == 0 and not self._usage_section) else indent_level
                 add_prog(level, prog_name, False)
 
     def _add_section(
