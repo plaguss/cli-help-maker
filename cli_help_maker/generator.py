@@ -374,7 +374,7 @@ class HelpGenerator:
             list[str]: _description_
         """
         # TODO: Allow adding the probability
-        args = [self._argument() for _ in range(total)]
+        args = [self._argument(optional_probability=0.5) for _ in range(total)]
 
         if self._argument_repeated:
             args[-1] = args[-1] + "..."
