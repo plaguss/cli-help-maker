@@ -291,9 +291,6 @@ class HelpGenerator:
         line as the Usage: , otherwise it is written in the next line, using the
         indentation level chosen.
         """
-        # if self._command_names:
-        #     return self._command_names
-        # else:
         commands = [self._program_name() for _ in range(total)]
         self._command_names.append(commands)
         return commands
@@ -454,8 +451,10 @@ class HelpGenerator:
             opts = self._options(total=self.number_of_options, in_section=options_in_section)
 
             for o in opts:
-                opt = " " + do_optional(o)
-                program += opt
+                # Only add the option if contained anything.
+                if len(o) > 0:
+                    opt = " " + do_optional(o)
+                    program += opt
 
         # 4) arguments
         args = self._arguments(total=self.number_of_arguments)
