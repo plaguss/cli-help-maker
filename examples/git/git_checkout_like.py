@@ -1,15 +1,26 @@
-"""Example script generating a message similar to `git checkout` as seen in:
+"""Example script generating a message similar to `git checkout -h` as seen in:
 https://github.com/jazzband/docopt-ng/blob/master/examples/git/git_checkout.py
 
-$ python examples/git_add_like.py
-usage: ybde hd [options] [--] <lh>
+$ python examples/git_checkout_like.py
+usage: rokmpnt indeo [options] -- <hlls>...
+       rokmpnt atlleu [options] -- <eaat>...
 
-    -e, --eleen  Llhnirsue desepte rhpoddjw. Aa ep ssice tnnch uxignn clpe
-                 tts eucafe enct
-    -o, --oefl   Rnsrh sope noei eoan rerimd naok teoaie nrano. Ka r. Ern
-                 etint p
-    -n, --nnsge
-    -o, --os     Yyocvi aae oaedeae aahdu roueeriiy dstltno og hr
+
+    -u ATENOIU-BRU        Sr nob m eo. Nsvncc yse urtoh. Lglple ar eak.
+    -h LPIES-SYEMORR      Rhu wnerm yice. Om lon. Aatsi osz tsmell inpe ms.
+    -n RU                 Siureek nfet. Ntctrlr rn.
+
+
+
+    --xn=ANDI             Di sry oeei eoo ifunaa enl. Lnu meys ahot. Ilrr neftc rtnon.
+                          Iihu tnsoanch. Mltu rgcsee ndd lii nvie oael .
+    --it-wlbyfude=LASI-A  Tasj yia hb. Hres crlaas. Otelcl taec oootf lbe os nndleljldeiftsee.
+                          Enplts tryrr rcnni lk lvkewli nmihpar chbg phbs.
+                          Araee pitdpia nao. P.
+    -a --ahulalasl-tuarlh
+                          Vg rhhme ooid. Io an cfuste sau.
+    -c                    Naasutohsi tlsdis aeist gmiholla ybeneaeam. Oed
+                          rfsedraitu. Refh mca s l vcd.
 
 """
 
@@ -22,30 +33,24 @@ if __name__ == "__main__":
     generator = gen.HelpGenerator(
         indent_spaces=4,
         prob_name_capitalized=0,
-        usage_section=False,
-        options_section=True,
-        options_header=False,
-        argument_style="between_brackets",
-        argument_documented_prob=0.1,
-        option_documented_prob=0.9,
         description_before=False,
         program_description_prob=0.0,
+        usage_section=False,
         usage_pattern_capitalized=False,
-        number_of_commands=1,
-        number_of_options=4,
+        argument_style="between_brackets",
+        argument_repeated=True,
+        options_section=True,
+        options_header=False,
+        option_documented_prob=1.,
+        options_shortcut=True,
         option_argument_separator={
             "separator": True,
-            "required": True,
+            "required": False,
         },
-        options_shortcut=True,
-        number_of_arguments=1,
-        arguments_same_line=True
-
+        number_of_commands=1,
+        number_of_options=12,
+        number_of_arguments=[1, 2],
+        exclusive_programs=2
     )
-    msg = generator.sample(
-    )
-    # PARA CONSEGUIR TODOS LOS ARGUMENTOS EN LA MISMA LINEA (same_line) UTILIZAR
-    # TEXTWRAP INDENT, CON INDENT INICIAL DIFERENTE, DE FORMA QUE QUEDE ALINEADO
-    # -> PARA HACER EL EJEMPLO DE quick_example.py PARTIR DE UNA FUNCIÓN
-    # QUE APILE LOS PROGRAMAS COMPLETOS.
+    msg = generator.sample()
     print(msg)

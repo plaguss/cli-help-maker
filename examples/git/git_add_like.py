@@ -2,14 +2,28 @@
 https://github.com/jazzband/docopt-ng/blob/master/examples/git/git_add.py
 
 $ python examples/git_add_like.py
-usage: ybde hd [options] [--] <lh>
+usage: nyia in [options] [--] [<efxr-se>]...
 
-    -e, --eleen  Llhnirsue desepte rhpoddjw. Aa ep ssice tnnch uxignn clpe
-                 tts eucafe enct
-    -o, --oefl   Rnsrh sope noei eoan rerimd naok teoaie nrano. Ka r. Ern
-                 etint p
-    -n, --nnsge
-    -o, --os     Yyocvi aae oaedeae aahdu roueeriiy dstltno og hr
+    -E, --ecaf            Ni mdm. Ae tabcct roi yonrp. Cmcu liotci ir lbdoc udwcann dn
+                          cbr. Eioieds scsftemll d.
+    -o, --oeiur           Eg ks aic. Cpedrdna s grri.
+    -w <oorp>
+    -l O                  Thlu eli ih.
+    -e OMS-EP             On lhayt olq sl.
+    --ewdptte=<irtatl-lunoojon>
+                          Ks uai eenatb ua hrcn eii elomnl. Es rfes tto.
+                          Aiy nti.
+    -c                    Ohswaewe dn iue cvre ouo.
+    --tnir                Tca aiebrv php mee or oeeiab siegrmtw rgrf cnihw abp. Hrdm
+                          siitbsao.
+    -h --hdraexpio-ssoe-vicp
+                          Esl mr uerlerm. Ratim slec eesdoietg. Neeahgn
+                          ffrrvasta oarmm teia emi wmmeid mlsi ness ivleil
+                          rci. Nfstir rhk aeo. Ck tnrxrneep.
+    -i PRUSTNJ-T          Eb ccva vsis aninkvfmnd cdab ejp. Tu oics acee. Hpo tlbeoo
+                          pmfyao oars eg.
+    --ce=MASO             Ryhghrea is.
+                      Inoha mad np lei. Sc taaa.
 
 """
 
@@ -22,14 +36,14 @@ if __name__ == "__main__":
     generator = gen.HelpGenerator(
         indent_spaces=4,
         prob_name_capitalized=0,
+        description_before=False,
+        program_description_prob=0.0,
         usage_section=False,
         options_section=True,
         options_header=False,
         argument_style="between_brackets",
-        argument_documented_prob=0.1,
+        argument_repeated=True,
         option_documented_prob=0.9,
-        description_before=False,
-        program_description_prob=0.0,
         usage_pattern_capitalized=False,
         number_of_commands=1,
         number_of_options=13,
