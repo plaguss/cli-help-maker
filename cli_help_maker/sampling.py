@@ -156,8 +156,10 @@ def paragraph_length() -> int:
 
 
 def randomize(probability: float = 1) -> Any:
-    """Function decorator to apply the function to the element with the
-    probability given.
+    """TODO:
+    Create a decorator to 'maybe apply' a function.
+    The decorator should insert a new argument to the
+    function which allows for applying it with certain probability.
     """
 
     def maybe_apply(func):
@@ -305,6 +307,7 @@ def make_option(
     value = make_argument(
         capitalized_prob=probability_value_cap, style=style, any_number=any_number
     )
+    # TODO: Simplify in a function
     if short:
         option += "-" + capitalize(name[0], short_capitalized_prob)
         if with_value:
