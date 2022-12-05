@@ -8,68 +8,17 @@ import textwrap
 from textwrap import indent
 
 from .sampling import capitalize, make_argument, make_option, make_paragraph, make_word
+from .utils import (
+    do_mutually_exclusive_groups,
+    do_optional,
+    do_required,
+    maybe_do_optional,
+    options_shortcut,
+    section_pattern,
+    usage_pattern,
+)
 
 text_wrapper = textwrap.TextWrapper(width=78)
-
-
-def usage_pattern(capitalized: bool = True) -> str:
-    usage = "usage: "
-    if capitalized:
-        return usage.capitalize()
-    return usage
-
-
-def section_pattern(section: str | None = "options", capitalized: bool = True) -> str:
-    """Creates a section header.
-
-    In general, the possible sections are `Arguments` or `Options`,
-    but for example git has personalized headers on their sections.
-
-    Args:
-        section (str or None, optional): _description_. Defaults to 2.
-        capitalized (float, optional): _description_. Defaults to 0.
-
-    """
-    if not section:
-        section = make_word() + ":"
-    else:
-        section += ":"
-
-    if capitalized:
-        return section.capitalize()
-
-    return section
-
-
-def do_optional(content: str) -> str:
-    """From http://docopt.org/
-
-    Elements (options, arguments, commands) enclosed with square brackets
-    "[ ]" are marked to be optional.
-
-    Args:
-        content (str): _description_
-
-    Returns:
-        str: _description_
-    """
-    return f"[{content}]"
-
-
-def do_required(content: str) -> str:
-    """From http://docopt.org/
-
-    All elements are required by default, if not included in brackets "[ ]".
-    However, sometimes it is necessary to mark elements as required explicitly
-    with parens "( )".
-
-    Args:
-        content (str): _description_
-
-    Returns:
-        str: _description_
-    """
-    return f"({content})"
 
 
 class HelpGenerator:
@@ -130,6 +79,10 @@ class HelpGenerator:
             "separator": False,
             "required": False,
         },
+        options_mutually_exclusive: dict[str, float | int] = {
+            "probability": 0.0,
+            "group": 0,
+        },
         read_from_stdin: bool = False,  # Not taken into account yet
         options_shortcut: bool = False,
         number_of_commands: int | list[int] = 0,
@@ -161,6 +114,15 @@ class HelpGenerator:
                 line programs. Defaults to False
             option_documented_prob (float): Probability of documenting each
                 option. Defaults to 0.9.
+            options_mutually_exclusive (dict[str, float | int])
+                Dict containing info with the probabilities of arguments being
+                grouped. `probability` defines the probability of the elements
+                being grouped, and `group` refers to the possible elements being
+                grouped. The possible values are checked just like for number_of_...
+                arguments. Wheter the grouped elements are optional or not, will
+                be determined via the probability of the elements being optional.
+                A list with a range of [0, 2] means at most 2 elements could
+                be grouped.
             exclusive_programs (int): Number of exclusive programs, according
                 to the usage pattern. When only one is given, a single program
                 definition occurs. Used to differentiate between different subcommands
@@ -176,33 +138,39 @@ class HelpGenerator:
         self._option_names = []
         self._argument_names = []
         # Layout options
+        self._total_width = total_width
         self._prob_name_capitalized = prob_name_capitalized
         self._options_style = options_style
         self._indent_spaces = indent_spaces
         self._usage_section = usage_section  # Used to split the programs in a section
         # or in the same line with indentation.
+        self._usage_first_line_aligned = usage_first_line_aligned
+        self._usage_pattern_capitalized = usage_pattern_capitalized
         self._arguments_section = arguments_section
         self._arguments_header = arguments_header
-        self._options_section = options_section
-        self._options_header = options_header
-        self._usage_first_line_aligned = usage_first_line_aligned
         self._argument_style = argument_style
         self._argument_repeated = argument_repeated
         self._argument_documented_prob = argument_documented_prob
         self._arguments_in_section = arguments_in_section
-        self._options_documented = options_documented
-        self._total_width = total_width
-        self._option_documented_prob = option_documented_prob
-        self._description_before = description_before
-        # Program description probability
-        self._program_description_prob = program_description_prob
-        self._usage_pattern_capitalized = usage_pattern_capitalized
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
-        self._options_pattern_capitalized = options_pattern_capitalized
-        self._read_from_stdin = read_from_stdin
+        self._arguments_same_line = arguments_same_line
+        self._options_section = options_section
+        self._options_header = options_header
+        self._options_documented = options_documented
+        self._option_documented_prob = option_documented_prob
         self._option_argument_separator = option_argument_separator
         self._options_shortcut = options_shortcut
-        self._arguments_same_line = arguments_same_line
+        self._options_pattern_capitalized = options_pattern_capitalized
+        self._options_mutually_exclusive = {
+            "probability": options_mutually_exclusive["probability"],
+            "group": self._check_number_of_elements(
+                options_mutually_exclusive["group"]
+            ),
+        }
+        # Program description probability
+        self._description_before = description_before
+        self._program_description_prob = program_description_prob
+        self._read_from_stdin = read_from_stdin
         self._exclusive_programs = exclusive_programs
 
         # Explain this is to allow working with a number of
@@ -259,7 +227,7 @@ class HelpGenerator:
 
     def _check_number_of_elements(self, number: int | list[int]) -> tuple[int, int]:
         """Checks the inputs given on number of commands or options.
-        
+
         This arguments are expected to be an int, a list with one or two ints.
         """
         if isinstance(number, int):
@@ -284,7 +252,7 @@ class HelpGenerator:
     def _commands(self, total: int = 0) -> list[str]:
         """Returns commands for the app.
 
-        The commands are generated once, and 
+        The commands are generated once, and
 
         i.e. `git add`, `git commit`, ...
 
@@ -345,7 +313,12 @@ class HelpGenerator:
 
         return option
 
-    def _options(self, total: int = 0, in_section: bool = False) -> list[str]:
+    def _options(
+        self,
+        total: int = 0,
+        in_section: bool = False,
+        mutually_exclusive_prob: float = 0,
+    ) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
@@ -395,7 +368,7 @@ class HelpGenerator:
         Returns:
             list[str]: _description_
         """
-        # TODO: Allow adding the probability 
+        # TODO: Allow adding the probability
         args = [self._argument() for _ in range(total)]
 
         if self._argument_repeated:
@@ -437,24 +410,39 @@ class HelpGenerator:
 
         if self._options_shortcut:
             # TODO: The probability should be defined outside:
-            program += " " + options_shortcut(capitalized_probability=0.001, all_caps=0) #OPTIONS_SHORTCUT
+            program += " " + options_shortcut(capitalized_probability=0.001, all_caps=0)
 
         if self._option_argument_separator["separator"]:
             sep = "--"
             if self._option_argument_separator["required"]:
-                sep = do_optional(sep)
+                sep = maybe_do_optional(sep, probability=0.5)
 
             program += " " + sep
 
         # 3) options
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
-            opts = self._options(total=self.number_of_options, in_section=options_in_section)
+            opts = self._options(
+                total=self.number_of_options, in_section=options_in_section
+            )
+            # If there are elements to group, do it first, then keep going:
+            opts = do_mutually_exclusive_groups(
+                elements=opts,
+                probability=self._options_mutually_exclusive["probability"],
+                groups=self._options_mutually_exclusive["group"],
+                optional_probability=0.5,  # TODO: Get it from argument
+            )
 
             for o in opts:
                 # Only add the option if contained anything.
                 if len(o) > 0:
-                    opt = " " + do_optional(o)
+                    if not "|" in o:
+                        # Check for the pipe operator to avoid possibly making
+                        # the argument twice optional.
+                        o = maybe_do_optional(o, probability=0.5)
+
+                    opt = " " + o
+
                     program += opt
 
         # 4) arguments
@@ -484,7 +472,7 @@ class HelpGenerator:
             indent_level = len(usage)
 
         # If there are no exlusive programs, dont't do anythin.
-        # It there is one, let the options generated to be different 
+        # It there is one, let the options generated to be different
         # (as if added in a section).
         # Otherwise, generate multiple programs as is.
         def add_prog(indent_level, prog_name, options_in_section):
@@ -660,25 +648,3 @@ class HelpGenerator:
         """Returns the help message annotated with the content"""
         raise NotImplementedError
         return ("Help message", [(1, 3, "ARGUMENT")])
-
-
-def options_shortcut(capitalized_probability: float = 0.0, all_caps: bool = False) -> str:
-    """Returns the shortcut for any options.
-
-    Args:
-        capitalized_probability (float, optional): Probability of returning
-            the first capital letter. Defaults to 0.
-        all_caps (bool, optional): If True, all the letters are in uppercase.
-            For example, click uses this option. Defaults to False.
-
-    Returns:
-        str: [options] section.
-
-    Note:
-        https://github.com/jazzband/docopt-ng
-    """
-    options = capitalize("options", probability=capitalized_probability)
-    shortcut = f"\[{options}]"
-    if all_caps:
-        return shortcut.upper()
-    return shortcut
