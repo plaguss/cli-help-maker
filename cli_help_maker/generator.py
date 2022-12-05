@@ -11,8 +11,6 @@ from .sampling import capitalize, make_argument, make_option, make_paragraph, ma
 
 text_wrapper = textwrap.TextWrapper(width=78)
 
-OPTIONS_SHORTCUT = " \[options]"
-
 
 def usage_pattern(capitalized: bool = True) -> str:
     usage = "usage: "
@@ -144,6 +142,13 @@ class HelpGenerator:
         Args:
             indent_spaces (int, optional): _description_. Defaults to 2.
             prob_name_capitalized (float, optional): _description_. Defaults to 0.
+            total_width (int): Total width allowed for the message. Defaults to 80
+            description_before (bool): Whether to add description for the program
+                before or after the program name.
+            program_description_prob (float) TODO
+            usage_section (bool) Determines the layout for the programs.
+                It True, the programs are generated as a section, similar
+                to optiosn and arguments. Defaults to True.
             options_style (dict, optional): _description_. Defaults to {}.
             options_header (bool, optional): _description_. Defaults to True.
             usage_first_line_aligned (bool, optional): _description_. Defaults to False.
@@ -154,11 +159,8 @@ class HelpGenerator:
             arguments_in_section (bool, optional): If True, writes the arguments
                 on its own section, otherwise they are written as single
                 line programs. Defaults to False
-            total_width (int): Total width allowed for the message. Defaults to 80
             option_documented_prob (float): Probability of documenting each
                 option. Defaults to 0.9.
-            description_before (bool): Whether to add description for the program
-                before or after the program name.
             exclusive_programs (int): Number of exclusive programs, according
                 to the usage pattern. When only one is given, a single program
                 definition occurs. Used to differentiate between different subcommands
@@ -204,14 +206,13 @@ class HelpGenerator:
         self._exclusive_programs = exclusive_programs
 
         # Explain this is to allow working with a number of
-        # exlusive_programs > 1
+        # exclusive_programs > 1
         self.number_of_commands = number_of_commands
         self.number_of_arguments = number_of_arguments
         self.number_of_options = number_of_options
 
         # Variables used to control the proper positioning
         # of the docs
-        # self._max_level_option_docs = int(1 / 3 * self._total_width)
         self._max_level_docs = int(1 / 3 * self._total_width)
         self._remaining_space_option_docs = int(
             self._total_width - self._max_level_docs
@@ -436,7 +437,7 @@ class HelpGenerator:
 
         if self._options_shortcut:
             # TODO: The probability should be defined outside:
-            program += options_shortcut(capitalized_probability=0.75, all_caps=0) #OPTIONS_SHORTCUT
+            program += " " + options_shortcut(capitalized_probability=0.001, all_caps=0) #OPTIONS_SHORTCUT
 
         if self._option_argument_separator["separator"]:
             sep = "--"
@@ -480,21 +481,24 @@ class HelpGenerator:
             self.help_message += "\n"
             indent_level = self._indent_spaces
         else:
-            indent_level = 0
+            indent_level = len(usage)
 
         # If there are no exlusive programs, dont't do anythin.
         # It there is one, let the options generated to be different 
         # (as if added in a section).
         # Otherwise, generate multiple programs as is.
-        if self._exclusive_programs == 1:
+        def add_prog(indent_level, prog_name, options_in_section):
             self.help_message += " " * indent_level
-            self._add_program(prog_name, options_in_section=True)
+            self._add_program(prog_name, options_in_section=options_in_section)
             self.help_message += "\n"
+
+        if self._exclusive_programs == 1:
+            add_prog(indent_level, prog_name, self._options_section)
+
         elif self._exclusive_programs > 1:
-            for _ in range(self._exclusive_programs):
-                self.help_message += " " * indent_level
-                self._add_program(prog_name)
-                self.help_message += "\n"
+            for i in range(self._exclusive_programs):
+                level = 0 if i == 0 else indent_level
+                add_prog(level, prog_name, False)
 
     def _add_section(
         self,
@@ -557,7 +561,7 @@ class HelpGenerator:
         Returns:
             str: _description_
         """
-        if random.random() > (1 - probability):
+        if random.random() > (1 - probability) and len(element) > 0:
             next_line = False
             if length > longest_elem:
                 next_line = True
