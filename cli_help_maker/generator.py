@@ -64,7 +64,7 @@ class HelpGenerator:
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
-        argument_repeated: bool = False,
+        argument_repeated: bool = False,  # TODO: Make it a probability
         arguments_in_section: bool = False,
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
@@ -78,12 +78,12 @@ class HelpGenerator:
         option_argument_separator: dict[str, bool] = {
             "separator": False,
             "required": False,
-        },
+        },  # TODO: Make it a probability to allow having it only defined in a program.
         options_mutually_exclusive: dict[str, float | int] = {
             "probability": 0.0,
             "group": 0,
         },
-        read_from_stdin: bool = False,  # Not taken into account yet
+        read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: bool = False,
         number_of_commands: int | list[int] = 0,
         number_of_arguments: int | list[int] = 0,
@@ -264,28 +264,24 @@ class HelpGenerator:
         self._command_names.append(commands)
         return commands
 
-    def _option(self, in_section: bool = False) -> str:
+    def _option(self, options_arguments: dict, in_section: bool) -> str:
         """Creates an option for the message.
 
+        A small subset of the arguments is generated here, those are allowed
+        to behave differently across the same program.
+
         Args:
-            in_section (bool, optional): _description_. Defaults to False.
+            options_arguments TODO: _description_.
 
         Returns:
             str: _description_
         """
+        # These are dependent of the point where they are generated:
         if in_section:
             kwargs = {
                 "short": random.choice([True, False]),
                 "long": random.choice([True, False]),
                 "with_value": random.choice([True, False]),
-                "short_capitalized_prob": 0.1,
-                "long_capitalized_prob": 0,
-                "short_separator": " ",
-                "long_separator": "=",
-                "short_long_separator": random.choice([", ", " "]),
-                "probability_name_cap": 0,
-                "probability_value_cap": 0,
-                "style": random.choice(["between_brackets", "all_caps"]),
             }
 
         else:
@@ -295,34 +291,29 @@ class HelpGenerator:
                 "short": short,
                 "long": long,
                 "with_value": random.choice([True, False]),
-                "short_capitalized_prob": 0.1,
-                "long_capitalized_prob": 0,
-                "short_separator": " ",
-                "long_separator": "=",
-                "short_long_separator": " ",  # Not used
-                "probability_name_cap": 0,
-                "probability_value_cap": 0,
-                "style": random.choice(["between_brackets", "all_caps"]),
             }
 
-        kwargs.update(**self._options_style)
-
-        option = make_option(**kwargs)
+        options_arguments.update(
+            {
+                "short_capitalized_prob": 0.1,
+                "long_capitalized_prob": 0,
+            },
+            **kwargs,
+        )
+        option = make_option(**options_arguments)
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
 
         return option
 
-    def _options(
-        self,
-        total: int = 0,
-        in_section: bool = False,
-        mutually_exclusive_prob: float = 0,
-    ) -> list[str]:
+    def _options(self, total: int = 0, in_section: bool = False) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
         be written in a separate section.
+
+        The options' layout is generated here to impose all the options
+        for a program adhere to the same style.
 
         Args:
             total (int, optional): Number of options to generate. Defaults to 0.
@@ -339,7 +330,19 @@ class HelpGenerator:
         #             uch hdrai
         # -a, --alab  Ias roron tlce. Namdgt euct le. Sheg pwlnanhd mnesa eaelap
         #             tnarn. Beb ln trrrsu
-        options = [self._option(in_section=in_section) for _ in range(total)]
+        # The following arguments are the same in general
+        kwargs = {
+            "short_separator": random.choice(["=", " "]),
+            "long_separator": random.choice(["=", " "]),
+            "short_long_separator": random.choice([", ", " "]),
+            "probability_name_cap": 0,
+            "probability_value_cap": 0,
+            "style": random.choice(["between_brackets", "all_caps"]),
+        }
+        # TODO: Maybe this has no real reason to be here
+        kwargs.update(**self._options_style)
+
+        options = [self._option(kwargs, in_section) for _ in range(total)]
         return options
 
     def _argument(self, optional_probability: float = 0.5) -> str:
@@ -471,7 +474,7 @@ class HelpGenerator:
         else:
             indent_level = len(usage)
 
-        # If there are no exlusive programs, dont't do anythin.
+        # If there are no exlusive programs, dont't do anything.
         # It there is one, let the options generated to be different
         # (as if added in a section).
         # Otherwise, generate multiple programs as is.
