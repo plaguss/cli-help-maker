@@ -108,35 +108,35 @@ class HelpGenerator:
         self,
         indent_spaces: int = 2,
         prob_name_capitalized: float = 0,
-        options_style: dict = {},  # Not used for the moment, generated internally
+        total_width: int = 78,
+        description_before: bool = True,
+        program_description_prob: float = 0.5,
         usage_section: bool = True,
+        usage_first_line_aligned: bool = False,
+        usage_pattern_capitalized: str = True,
         arguments_section: bool = False,
         arguments_header: bool = False,
-        options_section: bool = False,
-        options_header: bool = False,
-        usage_first_line_aligned: bool = False,
         argument_style: str = "between_brackets",
         argument_repeated: bool = False,
         arguments_in_section: bool = False,
-        options_documented: bool = False,
-        total_width: int = 78,
         argument_documented_prob: float = 0.9,
-        option_documented_prob: float = 0.9,
-        description_before: bool = True,
-        program_description_prob: float = 0.5,
-        usage_pattern_capitalized: str = True,
         arguments_pattern_capitalized: str = True,
+        arguments_same_line: bool = True,  # What is this used for?
+        options_style: dict = {},  # Not used for the moment, generated internally
+        options_section: bool = False,
+        options_header: bool = False,
+        options_documented: bool = False,
+        option_documented_prob: float = 0.9,
         options_pattern_capitalized: str = True,
-        number_of_commands: int | list[int] = 0,
-        number_of_arguments: int | list[int] = 0,
-        number_of_options: int | list[int] = 0,
-        read_from_stdin: bool = False,
         option_argument_separator: dict[str, bool] = {
             "separator": False,
             "required": False,
         },
+        read_from_stdin: bool = False,  # Not taken into account yet
         options_shortcut: bool = False,
-        arguments_same_line: bool = True,
+        number_of_commands: int | list[int] = 0,
+        number_of_arguments: int | list[int] = 0,
+        number_of_options: int | list[int] = 0,
         exclusive_programs: int = 1,
     ) -> None:
         """_summary_
@@ -267,7 +267,6 @@ class HelpGenerator:
             if len(number) == 1:
                 l, h = number, number
             else:
-                #  and len(number) == 2:
                 l, h = number[0], number[1]
         else:
             raise ValueError(f"Must be an int or a list of 2 ints")
@@ -275,7 +274,7 @@ class HelpGenerator:
 
     def _description(self) -> str:
         desc = make_paragraph()
-        return "\n".join(text_wrapper.wrap(desc))
+        return text_wrapper.fill(desc)
 
     def _program_name(self) -> str:
         """Returns a name for the app."""
@@ -292,12 +291,12 @@ class HelpGenerator:
         line as the Usage: , otherwise it is written in the next line, using the
         indentation level chosen.
         """
-        if self._command_names:
-            return self._command_names
-        else:
-            commands = [self._program_name() for _ in range(total)]
-            self._command_names = commands
-            return commands
+        # if self._command_names:
+        #     return self._command_names
+        # else:
+        commands = [self._program_name() for _ in range(total)]
+        self._command_names.append(commands)
+        return commands
 
     def _option(self, in_section: bool = False) -> str:
         """Creates an option for the message.
@@ -308,20 +307,16 @@ class HelpGenerator:
         Returns:
             str: _description_
         """
-        # TODO: The arguments must change depending on the place the function is
-        # called.
         if in_section:
-            short = random.choice([True, False])
-            long = random.choice([True, False])
             kwargs = {
-                "short": short,
-                "long": long,
+                "short": random.choice([True, False]),
+                "long": random.choice([True, False]),
                 "with_value": random.choice([True, False]),
                 "short_capitalized_prob": 0.1,
                 "long_capitalized_prob": 0,
                 "short_separator": " ",
                 "long_separator": "=",
-                "short_long_separator": random.choices([", ", " "]),
+                "short_long_separator": random.choice([", ", " "]),
                 "probability_name_cap": 0,
                 "probability_value_cap": 0,
                 "style": random.choice(["between_brackets", "all_caps"]),
@@ -402,9 +397,8 @@ class HelpGenerator:
         Returns:
             list[str]: _description_
         """
+        # TODO: Allow adding the probability 
         args = [self._argument() for _ in range(total)]
-        # Store the argument names in case they are documented later.
-        # self._argument_names += args
 
         if self._argument_repeated:
             args[-1] = args[-1] + "..."
@@ -416,7 +410,7 @@ class HelpGenerator:
             return self._description()
         return ""
 
-    def _add_program(self, prog_name: str) -> None:
+    def _add_program(self, prog_name: str, options_in_section: bool = False) -> None:
         """Single line program generator.
 
         Uses the program name as this may be reused.
@@ -444,7 +438,8 @@ class HelpGenerator:
         )
 
         if self._options_shortcut:
-            program += OPTIONS_SHORTCUT
+            # TODO: The probability should be defined outside:
+            program += options_shortcut(capitalized_probability=0.75, all_caps=0) #OPTIONS_SHORTCUT
 
         if self._option_argument_separator["separator"]:
             sep = "--"
@@ -456,7 +451,7 @@ class HelpGenerator:
         # 3) options
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
-            opts = self._options(total=self.number_of_options)
+            opts = self._options(total=self.number_of_options, in_section=options_in_section)
 
             for o in opts:
                 opt = " " + do_optional(o)
@@ -488,10 +483,19 @@ class HelpGenerator:
         else:
             indent_level = 0
 
-        for _ in range(self._exclusive_programs):
+        # If there are no exlusive programs, dont't do anythin.
+        # It there is one, let the options generated to be different 
+        # (as if added in a section).
+        # Otherwise, generate multiple programs as is.
+        if self._exclusive_programs == 1:
             self.help_message += " " * indent_level
-            self._add_program(prog_name)
+            self._add_program(prog_name, options_in_section=True)
             self.help_message += "\n"
+        elif self._exclusive_programs > 1:
+            for _ in range(self._exclusive_programs):
+                self.help_message += " " * indent_level
+                self._add_program(prog_name)
+                self.help_message += "\n"
 
     def _add_section(
         self,
@@ -617,10 +621,6 @@ class HelpGenerator:
         if not self._description_before:
             self._add_program_description()
 
-        # TODO: Review the arguments and options sections,
-        # the names must be gathered from the variables
-        # _argument_names it they already appeared.
-
         if self._arguments_section:
             self.help_message += "\n"
             # If the arguments were created when calling _add_programs,
@@ -642,7 +642,7 @@ class HelpGenerator:
             if self._option_names:
                 options = self._option_names
             else:
-                options = self._options(total=self.number_of_options)
+                options = self._options(total=self.number_of_options, in_section=True)
             self._add_section(
                 elements=options,
                 has_header=self._options_header,
