@@ -59,16 +59,16 @@ class HelpGenerator:
         description_before: bool = True,
         program_description_prob: float = 0.5,
         usage_section: bool = True,
-        usage_first_line_aligned: bool = False,
+        # usage_first_line_aligned: bool = False,
         usage_pattern_capitalized: str = True,
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
         argument_repeated: bool = False,  # TODO: Make it a probability
-        arguments_in_section: bool = False,
+        # arguments_in_section: bool = False,
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
-        arguments_same_line: bool = True,  # What is this used for?
+        # arguments_same_line: bool = True,  # What is this used for?
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
@@ -94,7 +94,8 @@ class HelpGenerator:
 
         Args:
             indent_spaces (int, optional): _description_. Defaults to 2.
-            prob_name_capitalized (float, optional): _description_. Defaults to 0.
+            prob_name_capitalized (float, optional): Probability of the program name
+                being capitalized. Defaults to 0.
             total_width (int): Total width allowed for the message. Defaults to 80
             description_before (bool): Whether to add description for the program
                 before or after the program name.
@@ -104,7 +105,7 @@ class HelpGenerator:
                 to optiosn and arguments. Defaults to True.
             options_style (dict, optional): _description_. Defaults to {}.
             options_header (bool, optional): _description_. Defaults to True.
-            usage_first_line_aligned (bool, optional): _description_. Defaults to False.
+            REMOVE usage_first_line_aligned (bool, optional): _description_. Defaults to False.
             argument_repeated (bool, optional): If given, the last argument
                 can have any number of arguments. Defaults to False.
             arguments_documented (bool, optional): Whether an argument
@@ -146,16 +147,16 @@ class HelpGenerator:
         self._indent_spaces = indent_spaces
         self._usage_section = usage_section  # Used to split the programs in a section
         # or in the same line with indentation.
-        self._usage_first_line_aligned = usage_first_line_aligned
+        # self._usage_first_line_aligned = usage_first_line_aligned
         self._usage_pattern_capitalized = usage_pattern_capitalized
         self._arguments_section = arguments_section
         self._arguments_header = arguments_header
         self._argument_style = argument_style
         self._argument_repeated = argument_repeated
         self._argument_documented_prob = argument_documented_prob
-        self._arguments_in_section = arguments_in_section
+        # self._arguments_in_section = arguments_in_section
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
-        self._arguments_same_line = arguments_same_line
+        # self._arguments_same_line = arguments_same_line
         self._options_section = options_section
         self._options_header = options_header
         self._options_documented = options_documented
@@ -302,6 +303,8 @@ class HelpGenerator:
             },
             **kwargs,
         )
+        options_arguments.update(**self._options_style)
+ 
         option = make_option(**options_arguments)
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
@@ -341,8 +344,6 @@ class HelpGenerator:
             "probability_value_cap": 0,
             "style": random.choice(["between_brackets", "all_caps"]),
         }
-        # TODO: Maybe this has no real reason to be here
-        kwargs.update(**self._options_style)
 
         options = [self._option(kwargs, in_section) for _ in range(total)]
         return options
@@ -377,7 +378,8 @@ class HelpGenerator:
         args = [self._argument(optional_probability=0.5) for _ in range(total)]
 
         if self._argument_repeated:
-            args[-1] = args[-1] + "..."
+            if len(args) > 0:
+                args[-1] = args[-1] + "..."
 
         return args
 
