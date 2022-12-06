@@ -1,4 +1,4 @@
-"""Example script generating a message similar to:
+r"""Example script generating a message similar to:
 https://github.com/jazzband/docopt-ng/blob/master/examples/quick_example.py
 
 $ python examples/arguments_example_like.py 
