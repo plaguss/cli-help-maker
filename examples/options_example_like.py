@@ -69,8 +69,4 @@ if __name__ == "__main__":
         exclusive_programs=3,
     )
     msg = generator.sample()
-    # PARA CONSEGUIR TODOS LOS ARGUMENTOS EN LA MISMA LINEA (same_line) UTILIZAR
-    # TEXTWRAP INDENT, CON INDENT INICIAL DIFERENTE, DE FORMA QUE QUEDE ALINEADO
-    # -> PARA HACER EL EJEMPLO DE quick_example.py PARTIR DE UNA FUNCIÓN
-    # QUE APILE LOS PROGRAMAS COMPLETOS.
     print(msg)
