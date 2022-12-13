@@ -7,27 +7,27 @@ Usage: vstsacmai arase [-g] [-o <aiuv-rr-b>] [--cria-tan] [--aeawol] [-u <cwti-e
                        [<rarboee-ope>]
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
+from cli_help_maker.utils import highlight_message
+
+generator = gen.HelpGenerator(
+    prob_name_capitalized=0.,
+    usage_section=False,
+    options_section=False,
+    options_header=False,
+    argument_style="between_brackets",
+    argument_documented_prob=0.0,
+    option_documented_prob=0.0,
+    description_before=False,
+    program_description_prob=0.0,
+    number_of_commands=1,
+    number_of_options=10,
+    options_shortcut=False,
+    number_of_arguments=2
+)
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        prob_name_capitalized=0.,
-        usage_section=False,
-        options_section=False,
-        options_header=False,
-        argument_style="between_brackets",
-        argument_documented_prob=0.0,
-        option_documented_prob=0.0,
-        description_before=False,
-        program_description_prob=0.0,
-        number_of_commands=1,
-        number_of_options=10,
-        options_shortcut=False,
-        number_of_arguments=2,
-        arguments_same_line=True
-    )
-    msg = generator.sample()
-    print(msg)
+    import json
+    annot = generator.annotations
+    highlight_message(json.loads(annot))

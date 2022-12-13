@@ -20,35 +20,39 @@ usage: ti td sy --ennr-i <e-dme-nyfg> -r <e> [--ynteeao <otd-mso>] [<eic>]
 from rich import print
 
 from cli_help_maker import generator as gen
+from cli_help_maker.utils import highlight_message
+
+
+generator = gen.HelpGenerator(
+    indent_spaces=4,
+    prob_name_capitalized=0,
+    description_before=False,
+    program_description_prob=0.0,
+    usage_section=False,
+    options_section=False,
+    options_header=False,
+    argument_style="between_brackets",
+    argument_repeated=False,
+    option_documented_prob=0.9,
+    usage_pattern_capitalized=False,
+    number_of_commands=[1, 2],
+    number_of_options=[0, 3],
+    option_argument_separator={
+        "separator": False,
+        "required": False,
+    },
+    options_mutually_exclusive={
+        "probability": 7 / 13,
+        "group": [0, 3],
+    },
+    options_shortcut=False,
+    number_of_arguments=1,
+    arguments_same_line=True,
+    exclusive_programs=12
+)
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        indent_spaces=4,
-        prob_name_capitalized=0,
-        description_before=False,
-        program_description_prob=0.0,
-        usage_section=False,
-        options_section=False,
-        options_header=False,
-        argument_style="between_brackets",
-        argument_repeated=False,
-        option_documented_prob=0.9,
-        usage_pattern_capitalized=False,
-        number_of_commands=[1, 2],
-        number_of_options=[0, 3],
-        option_argument_separator={
-            "separator": False,
-            "required": False,
-        },
-        options_mutually_exclusive={
-            "probability": 7 / 13,
-            "group": [0, 3],
-        },
-        options_shortcut=False,
-        number_of_arguments=1,
-        arguments_same_line=True,
-        exclusive_programs=12
-    )
-    msg = generator.sample()
-    print(msg)
+    import json
+    annot = generator.annotations
+    highlight_message(json.loads(annot))

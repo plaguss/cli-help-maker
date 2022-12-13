@@ -29,32 +29,34 @@ Options:
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
+from cli_help_maker.utils import highlight_message
+
+
+generator = gen.HelpGenerator(
+    indent_spaces=4,
+    usage_section=True,
+    usage_pattern_capitalized=True,
+    description_before=True,
+    program_description_prob=1.,
+    argument_style="between_brackets",
+    options_section=True,
+    options_header=True,
+    options_style={
+        "style": "between_brackets"
+    },
+    options_mutually_exclusive={
+        "probability": 0.5,
+        "group": [0, 3],
+    },
+    number_of_commands=[0, 1],
+    number_of_options=[1, 3],
+    number_of_arguments=1,
+    exclusive_programs=4
+)
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        indent_spaces=4,
-        usage_section=True,
-        usage_pattern_capitalized=True,
-        description_before=True,
-        program_description_prob=1.,
-        argument_style="between_brackets",
-        options_section=True,
-        options_header=True,
-        options_style={
-            "style": "between_brackets"
-        },
-        options_mutually_exclusive={
-            "probability": 0.5,
-            "group": [0, 3],
-        },
-        number_of_commands=[0, 1],
-        number_of_options=[1, 3],
-        number_of_arguments=1,
-        exclusive_programs=4
-    )
-    msg = generator.sample()
-    print(msg)
+    import json
+    annot = generator.annotations
+    highlight_message(json.loads(annot))

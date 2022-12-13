@@ -24,27 +24,28 @@ Options:
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
+from cli_help_maker.utils import highlight_message
+
+generator = gen.HelpGenerator(
+    indent_spaces=2,
+    usage_section=True,
+    program_description_prob=1.,
+    description_before=False,
+    arguments_section=True,
+    arguments_header=True,
+    options_section=True,
+    options_header=True,
+    usage_pattern_capitalized=True,
+    number_of_commands=2,
+    number_of_options=[1, 3],
+    number_of_arguments=1,
+    argument_style="all_caps",
+    exclusive_programs=2
+)
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        indent_spaces=2,
-        usage_section=True,
-        program_description_prob=1.,
-        description_before=False,
-        arguments_section=True,
-        arguments_header=True,
-        options_section=True,
-        options_header=True,
-        usage_pattern_capitalized=True,
-        number_of_commands=2,
-        number_of_options=[1, 3],
-        number_of_arguments=1,
-        argument_style="all_caps",
-        exclusive_programs=2
-    )
-    msg = generator.sample()
-    print(msg)
+    import json
+    annot = generator.annotations
+    highlight_message(json.loads(annot))

@@ -43,31 +43,35 @@ usage: aasn ekoefek -w [--sil] [-m CCGESB-HS]
 from rich import print
 
 from cli_help_maker import generator as gen
+from cli_help_maker.utils import highlight_message
+
+
+generator = gen.HelpGenerator(
+    indent_spaces=4,
+    prob_name_capitalized=0,
+    description_before=False,
+    program_description_prob=0.0,
+    usage_section=False,
+    usage_pattern_capitalized=False,
+    argument_style="between_brackets",
+    argument_repeated=False,
+    options_section=True,
+    options_header=False,
+    option_documented_prob=1.,
+    # TODO: This must be together with documented options.
+    options_shortcut=False,
+    options_mutually_exclusive={
+        "probability": 3/12,
+        "group": [0, 2],
+    },
+    number_of_commands=1,
+    number_of_options=[2, 4],
+    number_of_arguments=[0, 2],
+    exclusive_programs=4
+)
 
 
 if __name__ == "__main__":
-    generator = gen.HelpGenerator(
-        indent_spaces=4,
-        prob_name_capitalized=0,
-        description_before=False,
-        program_description_prob=0.0,
-        usage_section=False,
-        usage_pattern_capitalized=False,
-        argument_style="between_brackets",
-        argument_repeated=False,
-        options_section=True,
-        options_header=False,
-        option_documented_prob=1.,
-        # TODO: This must be together with documented options.
-        options_shortcut=False,
-        options_mutually_exclusive={
-            "probability": 3/12,
-            "group": [0, 2],
-        },
-        number_of_commands=1,
-        number_of_options=[2, 4],
-        number_of_arguments=[0, 2],
-        exclusive_programs=4
-    )
-    msg = generator.sample()
-    print(msg)
+    import json
+    annot = generator.annotations
+    highlight_message(json.loads(annot))
