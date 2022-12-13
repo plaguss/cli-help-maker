@@ -7,14 +7,14 @@ name = "cli-help-maker"
 authors = [
     {name = "Agustín Piqueres", email = "agustin.piqueres@gmail.com"}
 ]
-dependencies = [
-    "lorem-text==2.1"
-]
+# dependencies = [
+#     "lorem-text==2.1"
+# ]
 
 license = {file = "LICENSE"}
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
 ]
 readme = "README.md"
 dynamic = ['version', 'description']
@@ -22,7 +22,7 @@ dynamic = ['version', 'description']
 [project.optional-dependencies]
 test = [
     "pytest==7.2.0",
-    "pytest-cov==4.0.0"
+    "nox==2022.11.21"
 ]
 dev = [
     "black",
