@@ -37,13 +37,6 @@ class HelpGenerator:
     keep track of the steps involved to obtain the labeled
     content.
 
-    help_message
-        Contains the str message that would be printed
-        in the console.
-    _annotations
-        A list of tuples of 3 elements, start position,
-        end position and the corresponding entity.
-
     If the option arguments_in_section is set to False,
     argument_documented_prob won't be used as they won't
     be documented.
@@ -52,14 +45,6 @@ class HelpGenerator:
     several exclusive patterns.
     When exclusive_programs is used, the number of commands, options
     and arguments would be used for each exclusive program.
-
-    TODO:
-        - Change description_before to a tuple of position and probability
-        - The option description is positioned starting at 2/3 the length
-            decided for the console. The description must be adjusted
-            if the arguments are longer.
-        - Add arguments and options to a list, in case they are written inline
-        and then documented on its section.
     """
 
     def __init__(
@@ -88,13 +73,13 @@ class HelpGenerator:
         option_argument_separator: dict[str, bool] = {
             "separator": False,
             "required": False,
-        },  # TODO: Make it a probability to allow having it only defined in a program.
+        },
         options_mutually_exclusive: dict[str, float | int] = {
             "probability": 0.0,
             "group": 0,
         },
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
-        options_shortcut: bool = False,
+        options_shortcut: float = 0,
         options_shortcut_capitalized_prob: float = 0.001,
         options_shortcut_all_caps: float = 0,
         exclusive_group_optional_prob: float = 0.5,
@@ -343,7 +328,9 @@ class HelpGenerator:
         if from_program:
             # Avoids inserting both a short and a long option in the
             # usage section
-            option = "--" + option.split(" --")[-1]
+            new_opt = option.split(" --")
+            if len(new_opt) == 2:
+                option = "--" + new_opt[-1]
 
         return option
 
@@ -474,8 +461,9 @@ class HelpGenerator:
             + len(usage_pattern(capitalized=self._usage_pattern_capitalized))
             + 1
         )
-
-        if self._options_shortcut:
+        opt_shortcut = random.random() > (1 - self._options_shortcut)
+        if opt_shortcut:
+        # if self._options_shortcut:
 
             # TODO: The probability should be defined outside:
             program += " " + options_shortcut(
@@ -492,7 +480,8 @@ class HelpGenerator:
             program += " " + sep
 
         # 3) options
-        if not self._options_shortcut:
+        if opt_shortcut:
+        # if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
             opts = self._options(
                 total=self.number_of_options, in_section=options_in_section, from_program=True
