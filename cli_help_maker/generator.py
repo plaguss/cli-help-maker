@@ -3,17 +3,20 @@
 Currently only docopt is allowed.
 """
 
+import difflib
 import json
 import random
 import textwrap
 from textwrap import indent
-import difflib
 
-from .sampling import capitalize, make_argument, make_option, make_paragraph, make_word
 from .utils import (
+    capitalize,
     do_mutually_exclusive_groups,
     do_optional,
-    do_required,
+    make_argument,
+    make_option,
+    make_paragraph,
+    make_word,
     maybe_do_optional,
     options_shortcut,
     section_pattern,
@@ -71,7 +74,8 @@ class HelpGenerator:
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
-        argument_repeated: bool = False,  # TODO: Make it a probability
+        argument_repeated: float = 0.0,  # TODO: Make it a probability
+        # argument_repeated: bool = False,  # TODO: Make it a probability
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
         options_style: dict = {},
@@ -312,6 +316,11 @@ class HelpGenerator:
         options_arguments.update(**self._options_style)
 
         option = make_option(**options_arguments)
+        # if the name was already generated (it can happen statistically...)
+        # try again, just once and expect it doesn't happen again.
+        if option in self._option_names:
+            option = make_option(**options_arguments)
+            
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
 
@@ -365,6 +374,11 @@ class HelpGenerator:
             str: argument name
         """
         arg = make_argument(capitalized_prob=0, style=self._argument_style)
+        # if the name was already generated (it can happen statistically...)
+        # try again, just once and expect it doesn't happen again.
+        if arg in self._argument_names:
+            arg = make_argument(capitalized_prob=0, style=self._argument_style)
+
         self._argument_names.append(arg)
         if random.random() > optional_probability:
             arg = do_optional(arg)
@@ -383,7 +397,7 @@ class HelpGenerator:
         # TODO: Allow adding the probability
         args = [self._argument(optional_probability=0.5) for _ in range(total)]
 
-        if self._argument_repeated:
+        if random.random() > (1 - self._argument_repeated):
             if len(args) > 0:
                 args[-1] = args[-1] + "..."
 
@@ -512,7 +526,13 @@ class HelpGenerator:
         self.help_message += filled_program
         self._add_annotations(program, filled_program, annotations, initial_length)
 
-    def _add_annotations(self, program: str, filled_program: str, annotations: list[tuple[str, int, int]], initial_length: int) -> None:
+    def _add_annotations(
+        self,
+        program: str,
+        filled_program: str,
+        annotations: list[tuple[str, int, int]],
+        initial_length: int,
+    ) -> None:
         """Corrects the annotations if necessary and stores them.
 
         Args:
@@ -524,9 +544,14 @@ class HelpGenerator:
         """
         # Compare only the length to see if they are the same
         if len(program) == len(filled_program):
-            [self._annotations.append((label, start, end)) for label, start, end in annotations]
+            [
+                self._annotations.append((label, start, end))
+                for label, start, end in annotations
+            ]
 
-        blocks = list(difflib.SequenceMatcher(a=program, b=filled_program).get_matching_blocks())[:-1]
+        blocks = list(
+            difflib.SequenceMatcher(a=program, b=filled_program).get_matching_blocks()
+        )[:-1]
 
         # FIXME: los incrementos deben acumularse a partir del tercer bloque
 
@@ -535,17 +560,32 @@ class HelpGenerator:
         print("blocks", blocks)
         for label, start, end in annotations:
             for i, b in enumerate(blocks[remain:]):
-                if (b.a == b.b == 0):
+                if b.a == b.b == 0:
                     if end <= (b.size + initial_length):
                         # Example: (start 9, end 15) Match(a=0, b=0, size=78)
-                        print("first block", (start, end), b, program[(start - initial_length):(end - initial_length)])
+                        print(
+                            "first block",
+                            (start, end),
+                            b,
+                            program[(start - initial_length) : (end - initial_length)],
+                        )
                         self._annotations.append((label, start, end))
 
-                    elif (start <= (b.size + initial_length)) and (end >= (b.size + initial_length)):
+                    elif (start <= (b.size + initial_length)) and (
+                        end >= (b.size + initial_length)
+                    ):
                         # Example: (start 77, end 110) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
                         inc += b.b - b.a
-                        print("first block and second", (start, end), (start, end + inc),  b, filled_program[(start - initial_length):(end + inc - initial_length)])
+                        print(
+                            "first block and second",
+                            (start, end),
+                            (start, end + inc),
+                            b,
+                            filled_program[
+                                (start - initial_length) : (end + inc - initial_length)
+                            ],
+                        )
                         self._annotations.append((label, start, end + inc))
                         remain += 1
 
@@ -554,7 +594,16 @@ class HelpGenerator:
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
                         inc += b.b - b.a
-                        print("next block", (start, end), (start + inc, end + inc), filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        print(
+                            "next block",
+                            (start, end),
+                            (start + inc, end + inc),
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
 
@@ -562,33 +611,68 @@ class HelpGenerator:
 
                 else:
                     # if (start > b.a) and (end <= (b.a + b.size)):
-                    if (start > b.a + initial_length) and (end <= (b.a + b.size + initial_length)):
-                    # if (start > b.a) and (end <= (b.b + b.size)):
+                    if (start > b.a + initial_length) and (
+                        end <= (b.a + b.size + initial_length)
+                    ):
+                        # if (start > b.a) and (end <= (b.b + b.size)):
                         # General case
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        print("second plus block", (start, end), (start + inc, end + inc), b, filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        print(
+                            "second plus block",
+                            (start, end),
+                            (start + inc, end + inc),
+                            b,
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         self._annotations.append((label, start + inc, end + inc))
 
                     # FIXME: The two following blocks have problems
                     # Sometimes this block needs one more position on the annotation
                     # and the next one needs one less, but cannot find the
                     # reason to do this
-                    elif (start <= b.a + b.size + initial_length) and (end >= (b.a + b.size + initial_length)):
+                    elif (start <= b.a + b.size + initial_length) and (
+                        end >= (b.a + b.size + initial_length)
+                    ):
                         # Aquí coge el incremento del siguiente bloque
                         b = blocks[i + 1]
                         old_inc = inc
-                        inc += b.b - b.a #+ 1
-                        print("second plus between blocks", (start, end), (start + old_inc, end + inc), b, filled_program[(start + old_inc - initial_length):(end + inc - initial_length)], program[(start - initial_length): (end - initial_length)])
+                        inc += b.b - b.a  # + 1
+                        print(
+                            "second plus between blocks",
+                            (start, end),
+                            (start + old_inc, end + inc),
+                            b,
+                            filled_program[
+                                (start + old_inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                            program[(start - initial_length) : (end - initial_length)],
+                        )
                         self._annotations.append((label, start + old_inc, end + inc))
                         # self._annotations.append((label, start + old_inc + 1, end + inc + 1))
                         remain += 1
 
                     else:
-                    # elif (start > b.a + initial_length) and (end > (b.a + b.size + initial_length)):
+                        # elif (start > b.a + initial_length) and (end > (b.a + b.size + initial_length)):
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
-                        inc += b.b - b.a #- 1  # Add one for the \n ?
-                        print("next block from second", (start, end), (start + inc, end + inc), b, filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        inc += b.b - b.a  # - 1  # Add one for the \n ?
+                        print(
+                            "next block from second",
+                            (start, end),
+                            (start + inc, end + inc),
+                            b,
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         # self._annotations.append((label, start + inc - 1, end + inc - 1))
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
