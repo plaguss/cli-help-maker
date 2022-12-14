@@ -97,6 +97,7 @@ class HelpGenerator:
         options_shortcut: bool = False,
         options_shortcut_capitalized_prob: float = 0.001,
         options_shortcut_all_caps: float = 0,
+        exclusive_group_optional_prob: float = 0.5,
         number_of_commands: int | list[int] = 0,
         number_of_arguments: int | list[int] = 0,
         number_of_options: int | list[int] = 0,
@@ -185,6 +186,8 @@ class HelpGenerator:
         self._options_shortcut = options_shortcut
         self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
         self._options_shortcut_all_caps = options_shortcut_all_caps
+
+        self._exclusive_group_optional_prob = exclusive_group_optional_prob
         # Program description probability
         self._description_before = description_before
         self._program_description_prob = program_description_prob
@@ -488,7 +491,7 @@ class HelpGenerator:
                 elements=opts,
                 probability=self._options_mutually_exclusive["probability"],
                 groups=self._options_mutually_exclusive["group"],
-                optional_probability=0.5,  # TODO: Get it from argument
+                optional_probability=self._exclusive_group_optional_prob,
             )
 
             for i, o in enumerate(opts):
@@ -701,7 +704,7 @@ class HelpGenerator:
         else:
             indent_level = len(usage)
 
-        # If there are no exlusive programs, dont't do anything.
+        # If there are no exclusive programs, dont't do anything.
         # It there is one, let the options generated to be different
         # (as if added in a section).
         # Otherwise, generate multiple programs as is.
