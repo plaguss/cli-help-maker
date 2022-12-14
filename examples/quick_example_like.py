@@ -15,7 +15,7 @@ from cli_help_maker.utils import highlight_message
 generator = gen.HelpGenerator(
     indent_spaces=2,
     usage_section=True,
-    program_description_prob=0.,
+    program_description_prob=0.0,
     arguments_section=False,
     options_section=False,
     usage_pattern_capitalized=True,
@@ -23,11 +23,12 @@ generator = gen.HelpGenerator(
     number_of_options=[1, 3],
     number_of_arguments=[1, 2],
     argument_style="between_brackets",
-    exclusive_programs=3
+    exclusive_programs=3,
 )
 
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

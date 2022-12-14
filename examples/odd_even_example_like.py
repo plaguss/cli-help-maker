@@ -31,5 +31,6 @@ generator = gen.HelpGenerator(
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

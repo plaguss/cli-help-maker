@@ -27,7 +27,6 @@ usage: rokmpnt indeo [options] -- <hlls>...
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
-
 generator = gen.HelpGenerator(
     indent_spaces=4,
     prob_name_capitalized=0,
@@ -39,7 +38,7 @@ generator = gen.HelpGenerator(
     argument_repeated=True,
     options_section=True,
     options_header=False,
-    option_documented_prob=1.,
+    option_documented_prob=1.0,
     options_shortcut=True,
     option_argument_separator={
         "separator": True,
@@ -48,10 +47,11 @@ generator = gen.HelpGenerator(
     number_of_commands=1,
     number_of_options=12,
     number_of_arguments=[1, 2],
-    exclusive_programs=2
+    exclusive_programs=2,
 )
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

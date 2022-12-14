@@ -9,7 +9,6 @@ $ python examples/naval_fate_like.py
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
-
 # TODO: Needs Example section
 generator = gen.HelpGenerator(
     # prob_name_capitalized=0.,
@@ -33,5 +32,6 @@ generator = gen.HelpGenerator(
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

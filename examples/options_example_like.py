@@ -54,12 +54,12 @@ generator = gen.HelpGenerator(
     argument_repeated=True,  # TODO: Needs a probability
     arguments_header=True,
     arguments_section=True,
-    argument_documented_prob=1.,
+    argument_documented_prob=1.0,
     options_section=True,
     options_header=True,
     option_documented_prob=1,
     options_style={"style": "all_caps"},
-    options_mutually_exclusive={"probability": 1/15, "group": 2},
+    options_mutually_exclusive={"probability": 1 / 15, "group": 2},
     number_of_commands=1,
     number_of_options=[1, 8],
     number_of_arguments=[0, 1],
@@ -69,5 +69,6 @@ generator = gen.HelpGenerator(
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

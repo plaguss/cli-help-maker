@@ -30,7 +30,7 @@ from cli_help_maker.utils import highlight_message
 generator = gen.HelpGenerator(
     indent_spaces=2,
     usage_section=True,
-    program_description_prob=1.,
+    program_description_prob=1.0,
     description_before=False,
     arguments_section=True,
     arguments_header=True,
@@ -41,11 +41,12 @@ generator = gen.HelpGenerator(
     number_of_options=[1, 3],
     number_of_arguments=1,
     argument_style="all_caps",
-    exclusive_programs=2
+    exclusive_programs=2,
 )
 
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

@@ -45,7 +45,6 @@ from rich import print
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
-
 generator = gen.HelpGenerator(
     indent_spaces=4,
     prob_name_capitalized=0,
@@ -57,21 +56,22 @@ generator = gen.HelpGenerator(
     argument_repeated=False,
     options_section=True,
     options_header=False,
-    option_documented_prob=1.,
+    option_documented_prob=1.0,
     # TODO: This must be together with documented options.
     options_shortcut=False,
     options_mutually_exclusive={
-        "probability": 3/12,
+        "probability": 3 / 12,
         "group": [0, 2],
     },
     number_of_commands=1,
     number_of_options=[2, 4],
     number_of_arguments=[0, 2],
-    exclusive_programs=4
+    exclusive_programs=4,
 )
 
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))

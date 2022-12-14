@@ -29,11 +29,12 @@ generator = gen.HelpGenerator(
     },
     options_shortcut=True,
     number_of_arguments=1,
-    arguments_same_line=True
+    arguments_same_line=True,
 )
 
 
 if __name__ == "__main__":
     import json
+
     annot = generator.annotations
     highlight_message(json.loads(annot))
