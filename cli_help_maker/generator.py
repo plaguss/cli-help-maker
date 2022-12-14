@@ -3,9 +3,11 @@
 Currently only docopt is allowed.
 """
 
+import json
 import random
 import textwrap
 from textwrap import indent
+import difflib
 
 from .sampling import capitalize, make_argument, make_option, make_paragraph, make_word
 from .utils import (
@@ -19,6 +21,12 @@ from .utils import (
 )
 
 text_wrapper = textwrap.TextWrapper(width=78)
+
+
+"""Labels for the pieces to find in the message. """
+CMD = "CMD"  # Command
+ARG = "ARG"  # Argument
+OPT = "OPT"  # Option
 
 
 class HelpGenerator:
@@ -59,16 +67,13 @@ class HelpGenerator:
         description_before: bool = True,
         program_description_prob: float = 0.5,
         usage_section: bool = True,
-        # usage_first_line_aligned: bool = False,
         usage_pattern_capitalized: str = True,
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
         argument_repeated: bool = False,  # TODO: Make it a probability
-        # arguments_in_section: bool = False,
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
-        # arguments_same_line: bool = True,  # What is this used for?
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
@@ -199,7 +204,8 @@ class HelpGenerator:
     @help_message.setter
     def help_message(self, msg: str) -> str:
         self._help_message = msg
-        self._current_length += len(msg)
+        # self._current_length += len(msg)
+        self._current_length = len(self._help_message)
 
     @property
     def number_of_commands(self) -> int:
@@ -304,7 +310,7 @@ class HelpGenerator:
             **kwargs,
         )
         options_arguments.update(**self._options_style)
- 
+
         option = make_option(**options_arguments)
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
@@ -400,12 +406,29 @@ class HelpGenerator:
                 For the moment is a simple way of keeping track of the indentation.
         """
         program = prog_name
+        # Initialize the start of the first label
+        start = self._current_length + len(program) + 1
+        # initial_length is a control variable to check the
+        # length of the program before and after calling textwrap.
+        # initial_length = len(program) + self._current_length
+        initial_length = self._current_length
+        print("INITIAL_LENGTH", initial_length)
+        annotations = []
 
         cmds = self._commands(total=self.number_of_commands)
 
-        for c in cmds:
-            cmd = " " + c
-            program += cmd
+        for i, c in enumerate(cmds):
+            if i == 0:
+                # In the first step, start counting from the current program
+                # length, plus the program name, plus 1 for the initial ' '.
+                # start = self._current_length + len(prog_name) + 1
+                end = start + len(c)
+            else:
+                start = end + 1
+            end = start + len(c)
+            program += " " + c
+            annotations.append((CMD, start, end))
+            # self._annotations.append((CMD, start, end))
 
         # For the length of the indentation, the relevant part are the program
         # name and subcommands
@@ -424,6 +447,7 @@ class HelpGenerator:
             if self._option_argument_separator["required"]:
                 sep = maybe_do_optional(sep, probability=0.5)
 
+            # TODO: Not yet decided if this should be annotated
             program += " " + sep
 
         # 3) options
@@ -440,7 +464,7 @@ class HelpGenerator:
                 optional_probability=0.5,  # TODO: Get it from argument
             )
 
-            for o in opts:
+            for i, o in enumerate(opts):
                 # Only add the option if contained anything.
                 if len(o) > 0:
                     if not "|" in o:
@@ -448,25 +472,128 @@ class HelpGenerator:
                         # the argument twice optional.
                         o = maybe_do_optional(o, probability=0.5)
 
-                    opt = " " + o
+                    if (i == 0) and (len(cmds) == 0):
+                        start = self._current_length + len(program) + 1
+                    else:
+                        # If there was at least one command added, start
+                        # from there
+                        start = end + 1
 
-                    program += opt
+                    end = start + len(o)
+                    program += " " + o
+                    annotations.append((OPT, start, end))
+                    # self._annotations.append((OPT, start, end))
 
         # 4) arguments
         args = self._arguments(total=self.number_of_arguments)
 
-        for a in args:
-            arg = " " + a
-            program += arg
+        for i, a in enumerate(args):
+            if i == 0:
+                start = (
+                    self._current_length + len(program) + 1
+                )  # Program plus the previous space
+            else:
+                start = end + 1
+            end = start + len(a)
+            program += " " + a
+            annotations.append((ARG, start, end))
+            # self._annotations.append((ARG, start, end))
 
-        self.help_message += "\n".join(
-            textwrap.wrap(
-                program,
-                width=self._total_width,
-                initial_indent="",
-                subsequent_indent=" " * subsequent_indent,
-            )
+        # FIXME: AS THE TEXT IS WRAPPED TO HAVE A NICE ERROR MESSAGE,
+        # THE ANNOTATIONS ARE MISPLACED AND THE POSITIONS MUST BE
+        # CORRECTED TO BE PROPERLY POSITIONED
+
+        filled_program = textwrap.fill(
+            program,
+            width=self._total_width,
+            initial_indent="",
+            subsequent_indent=" " * subsequent_indent,
         )
+        self.help_message += filled_program
+        self._add_annotations(program, filled_program, annotations, initial_length)
+
+    def _add_annotations(self, program: str, filled_program: str, annotations: list[tuple[str, int, int]], initial_length: int) -> None:
+        """Corrects the annotations if necessary and stores them.
+
+        Args:
+            program (str): Original program as a string.
+            filled_program (str): Program corrected by textwrapper. May be the same as
+                program if the total_width wasn't exceeded.
+            annotations (list[tuple[str, int, int]]): List with 3 element tuple that
+                represents the label, the start and end of the label in the program.
+        """
+        # Compare only the length to see if they are the same
+        if len(program) == len(filled_program):
+            [self._annotations.append((label, start, end)) for label, start, end in annotations]
+
+        blocks = list(difflib.SequenceMatcher(a=program, b=filled_program).get_matching_blocks())[:-1]
+
+        # FIXME: los incrementos deben acumularse a partir del tercer bloque
+
+        remain = 0  # Variable to avoid checking again blocks
+        inc = 0
+        print("blocks", blocks)
+        for label, start, end in annotations:
+            for i, b in enumerate(blocks[remain:]):
+                if (b.a == b.b == 0):
+                    if end <= (b.size + initial_length):
+                        # Example: (start 9, end 15) Match(a=0, b=0, size=78)
+                        print("first block", (start, end), b, program[(start - initial_length):(end - initial_length)])
+                        self._annotations.append((label, start, end))
+
+                    elif (start <= (b.size + initial_length)) and (end >= (b.size + initial_length)):
+                        # Example: (start 77, end 110) Match(a=0, b=0, size=78)
+                        b = blocks[i + 1]
+                        inc += b.b - b.a
+                        print("first block and second", (start, end), (start, end + inc),  b, filled_program[(start - initial_length):(end + inc - initial_length)])
+                        self._annotations.append((label, start, end + inc))
+                        remain += 1
+
+                    else:
+                        # This one is the first case from the next block.
+                        # Example: (start 86, end 99) Match(a=0, b=0, size=78)
+                        b = blocks[i + 1]
+                        inc += b.b - b.a
+                        print("next block", (start, end), (start + inc, end + inc), filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        self._annotations.append((label, start + inc, end + inc))
+                        remain += 1
+
+                    break
+
+                else:
+                    # if (start > b.a) and (end <= (b.a + b.size)):
+                    if (start > b.a + initial_length) and (end <= (b.a + b.size + initial_length)):
+                    # if (start > b.a) and (end <= (b.b + b.size)):
+                        # General case
+                        # Example: (start 86, end 99) Match(a=0, b=0, size=78)
+                        print("second plus block", (start, end), (start + inc, end + inc), b, filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        self._annotations.append((label, start + inc, end + inc))
+
+                    # FIXME: The two following blocks have problems
+                    # Sometimes this block needs one more position on the annotation
+                    # and the next one needs one less, but cannot find the
+                    # reason to do this
+                    elif (start <= b.a + b.size + initial_length) and (end >= (b.a + b.size + initial_length)):
+                        # Aquí coge el incremento del siguiente bloque
+                        b = blocks[i + 1]
+                        old_inc = inc
+                        inc += b.b - b.a #+ 1
+                        print("second plus between blocks", (start, end), (start + old_inc, end + inc), b, filled_program[(start + old_inc - initial_length):(end + inc - initial_length)], program[(start - initial_length): (end - initial_length)])
+                        self._annotations.append((label, start + old_inc, end + inc))
+                        # self._annotations.append((label, start + old_inc + 1, end + inc + 1))
+                        remain += 1
+
+                    else:
+                    # elif (start > b.a + initial_length) and (end > (b.a + b.size + initial_length)):
+                        # Example: (start 86, end 99) Match(a=0, b=0, size=78)
+                        b = blocks[i + 1]
+                        inc += b.b - b.a #- 1  # Add one for the \n ?
+                        print("next block from second", (start, end), (start + inc, end + inc), b, filled_program[(start + inc - initial_length):(end + inc - initial_length)])
+                        # self._annotations.append((label, start + inc - 1, end + inc - 1))
+                        self._annotations.append((label, start + inc, end + inc))
+                        remain += 1
+
+                    break
 
     def _add_programs(self, prog_name: str) -> None:
         usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
@@ -520,6 +647,8 @@ class HelpGenerator:
                 to add random named section.
             documented_prob (float) Probability of options or arguments being documented.
         """
+        # TODO: Add the labels' positions here too!
+
         if len(elements) > 0:
             if has_header:
                 self.help_message += section_pattern(
@@ -527,23 +656,31 @@ class HelpGenerator:
                 )
                 self.help_message += "\n"
 
-            opt_lengths = [len(o) + self._indent_spaces + 2 for o in elements]
-            longest_opt = max(opt_lengths)
+            elem_lengths = [len(e) + self._indent_spaces + 2 for e in elements]
+            longest_opt = max(elem_lengths)
 
-            if any(l > self._max_level_docs for l in opt_lengths):
+            if any(l > self._max_level_docs for l in elem_lengths):
                 self._docs_limited = True
                 longest_opt = self._max_level_docs
 
-            for o, length in zip(elements, opt_lengths):
-                opt = indent(o, " " * self._indent_spaces)
-                opt = self._add_documentation(
-                    opt,
+            for e, length in zip(elements, elem_lengths):
+                elem = indent(e, " " * self._indent_spaces)
+
+                start = self._current_length + len(" " * self._indent_spaces)
+                end = start + len(e)
+                # TODO: This must also deal with CMD when ready
+                label = OPT if section_name == "options" else ARG
+                self._annotations.append((label, start, end))
+
+                elem = self._add_documentation(
+                    elem,
                     longest_opt,
                     length,
                     documented_prob,
                 )
 
-                self.help_message += opt + "\n"
+                self.help_message += elem + "\n"
+
             self._docs_limited = False
 
     def _add_documentation(
@@ -614,7 +751,6 @@ class HelpGenerator:
         Returns:
             str: _description_
         """
-
         if self._description_before:
             self._add_program_description()
 
@@ -656,7 +792,15 @@ class HelpGenerator:
 
         return self.help_message
 
-    def labels(self) -> str:
-        """Returns the help message annotated with the content"""
-        raise NotImplementedError
-        return ("Help message", [(1, 3, "ARGUMENT")])
+    @property
+    def annotations(self) -> str:
+        """Returns the help message annotated with the content.
+
+        It is created as a json lines (jsonl), to create a dataset
+        in this format.
+        """
+        self._help_message = ""
+        msg = self.sample()
+        return json.dumps(
+            {"message": msg, "annotations": self._annotations}, ensure_ascii=False
+        )
