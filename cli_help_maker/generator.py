@@ -291,7 +291,7 @@ class HelpGenerator:
         self._command_names.append(commands)
         return commands
 
-    def _option(self, options_arguments: dict, in_section: bool) -> str:
+    def _option(self, options_arguments: dict, in_section: bool, from_program: bool) -> str:
         """Creates an option for the message.
 
         A small subset of the arguments is generated here, those are allowed
@@ -299,6 +299,8 @@ class HelpGenerator:
 
         Args:
             options_arguments TODO: _description_.
+            in_section (bool): Whether the option is generated for a section or not.
+            from_program (bool): See _options for the description.
 
         Returns:
             str: _description_
@@ -338,9 +340,14 @@ class HelpGenerator:
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
 
+        if from_program:
+            # Avoids inserting both a short and a long option in the
+            # usage section
+            option = "--" + option.split(" --")[-1]
+
         return option
 
-    def _options(self, total: int = 0, in_section: bool = False) -> list[str]:
+    def _options(self, total: int = 0, in_section: bool = False, from_program: bool = False) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
@@ -354,6 +361,10 @@ class HelpGenerator:
             in_section (bool, optional): Whether the options are generated
                 for a section or not. The arguments for the
                 generator are slightly different. Defaults to False.
+            from_program (bool, optional): Used to determine if the method
+                is called from _add_program, to avoid inserting an option
+                with both short and long option in the usage section.
+                Defaults to False.
 
         Returns:
             list[str]: _description_
@@ -367,7 +378,7 @@ class HelpGenerator:
             "style": random.choice(["between_brackets", "all_caps"]),
         }
 
-        options = [self._option(kwargs, in_section) for _ in range(total)]
+        options = [self._option(kwargs, in_section, from_program) for _ in range(total)]
         return options
 
     def _argument(self, optional_probability: float = 0.5) -> str:
@@ -484,7 +495,7 @@ class HelpGenerator:
         if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
             opts = self._options(
-                total=self.number_of_options, in_section=options_in_section
+                total=self.number_of_options, in_section=options_in_section, from_program=True
             )
             # If there are elements to group, do it first, then keep going:
             opts = do_mutually_exclusive_groups(
