@@ -273,7 +273,12 @@ class HelpGenerator:
         line as the Usage: , otherwise it is written in the next line, using the
         indentation level chosen.
         """
-        commands = [self._program_name() for _ in range(total)]
+        commands = []
+        while len(commands) < total:
+            c = self._program_name()
+            if len(c) > 2:
+                commands.append(c)
+
         self._command_names.append(commands)
         return commands
 
