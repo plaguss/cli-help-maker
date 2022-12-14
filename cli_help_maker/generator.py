@@ -56,6 +56,10 @@ class HelpGenerator:
         program_description_prob: float = 0.5,
         usage_section: bool = True,
         usage_pattern_capitalized: str = True,
+        commands_section: bool = False,
+        commands_header: bool = False,
+        commands_capitalized: float = 0,
+        commands_documented_prob: float = 0.01,
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
@@ -145,8 +149,13 @@ class HelpGenerator:
         self._indent_spaces = indent_spaces
         self._usage_section = usage_section  # Used to split the programs in a section
         # or in the same line with indentation.
-        # self._usage_first_line_aligned = usage_first_line_aligned
         self._usage_pattern_capitalized = usage_pattern_capitalized
+
+        self._commands_section = commands_section
+        self._commands_header = commands_header
+        self._commands_capitalized = commands_capitalized
+        self._commands_documented_prob = commands_documented_prob
+
         self._arguments_section = arguments_section
         self._arguments_header = arguments_header
         self._argument_style = argument_style
@@ -272,8 +281,8 @@ class HelpGenerator:
             c = self._program_name()
             if len(c) > 2:
                 commands.append(c)
+                self._command_names.append(c)
 
-        self._command_names.append(commands)
         return commands
 
     def _option(self, options_arguments: dict, in_section: bool, from_program: bool) -> str:
@@ -463,7 +472,6 @@ class HelpGenerator:
         )
         opt_shortcut = random.random() > (1 - self._options_shortcut)
         if opt_shortcut:
-        # if self._options_shortcut:
 
             # TODO: The probability should be defined outside:
             program += " " + options_shortcut(
@@ -481,7 +489,6 @@ class HelpGenerator:
 
         # 3) options
         if opt_shortcut:
-        # if not self._options_shortcut:
             # With options shortcut, these get written directly in a section
             opts = self._options(
                 total=self.number_of_options, in_section=options_in_section, from_program=True
@@ -746,8 +753,6 @@ class HelpGenerator:
                 to add random named section.
             documented_prob (float) Probability of options or arguments being documented.
         """
-        # TODO: Add the labels' positions here too!
-
         if len(elements) > 0:
             if has_header:
                 self.help_message += section_pattern(
@@ -762,13 +767,20 @@ class HelpGenerator:
                 self._docs_limited = True
                 longest_opt = self._max_level_docs
 
+            print("ELEMENTS", elements)
             for e, length in zip(elements, elem_lengths):
                 elem = indent(e, " " * self._indent_spaces)
 
                 start = self._current_length + len(" " * self._indent_spaces)
                 end = start + len(e)
-                # TODO: This must also deal with CMD when ready
-                label = OPT if section_name == "options" else ARG
+
+                if section_name == "options":
+                    label = OPT
+                elif section_name == "arguments":
+                    label = ARG
+                else:
+                    label = CMD
+
                 self._annotations.append((label, start, end))
 
                 elem = self._add_documentation(
@@ -859,10 +871,27 @@ class HelpGenerator:
         if not self._description_before:
             self._add_program_description()
 
+        # TODO: Not defined yet
+        if self._commands_section:
+            # If the commands were created when calling _add_programs,
+            # get them from the list of names. The same applies to the options and arguments.
+            self.help_message += "\n"
+
+            if self._command_names:
+                commands = self._command_names
+            else:
+                commands = self._commands(total=self.number_of_commands)
+
+            self._add_section(
+                elements=commands,
+                has_header=self._commands_header,
+                section_name="commands",
+                capitalized=self._commands_capitalized,
+                documented_prob=self._commands_documented_prob,
+            )
+
         if self._arguments_section:
             self.help_message += "\n"
-            # If the arguments were created when calling _add_programs,
-            # get them from the list of names. The same applies to the options.
             if self._argument_names:
                 arguments = self._argument_names
             else:
