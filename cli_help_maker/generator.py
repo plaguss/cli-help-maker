@@ -75,9 +75,9 @@ class HelpGenerator:
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
         argument_repeated: float = 0.0,  # TODO: Make it a probability
-        # argument_repeated: bool = False,  # TODO: Make it a probability
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
+        argument_capitalized_prob: float = 0,
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
@@ -163,9 +163,9 @@ class HelpGenerator:
         self._argument_style = argument_style
         self._argument_repeated = argument_repeated
         self._argument_documented_prob = argument_documented_prob
-        # self._arguments_in_section = arguments_in_section
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
-        # self._arguments_same_line = arguments_same_line
+        self._argument_capitalized_prob = argument_capitalized_prob
+
         self._options_section = options_section
         self._options_header = options_header
         self._options_documented = options_documented
@@ -349,13 +349,6 @@ class HelpGenerator:
         Returns:
             list[str]: _description_
         """
-        # TODO: Need to check the options are not the same (the probability
-        # of happening is high when an option uses a single letter, i.e.:
-        # -a, --attn  Rielbieo ergeetl els. Ef isbetbd. Ec ktoy ldg ooei. Ee nton
-        #             uch hdrai
-        # -a, --alab  Ias roron tlce. Namdgt euct le. Sheg pwlnanhd mnesa eaelap
-        #             tnarn. Beb ln trrrsu
-        # The following arguments are the same in general
         kwargs = {
             "short_separator": random.choice(["=", " "]),
             "long_separator": random.choice(["=", " "]),
@@ -378,11 +371,11 @@ class HelpGenerator:
         Returns:
             str: argument name
         """
-        arg = make_argument(capitalized_prob=0, style=self._argument_style)
+        arg = make_argument(capitalized_prob=self._argument_capitalized_prob, style=self._argument_style)
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
         if arg in self._argument_names:
-            arg = make_argument(capitalized_prob=0, style=self._argument_style)
+            arg = make_argument(capitalized_prob=self._argument_capitalized_prob, style=self._argument_style)
 
         self._argument_names.append(arg)
         if random.random() > optional_probability:
