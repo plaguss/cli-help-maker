@@ -74,14 +74,14 @@ class HelpGenerator:
         arguments_section: bool = False,
         arguments_header: bool = False,
         argument_style: str = "between_brackets",
-        argument_repeated: float = 0.0,  # TODO: Make it a probability
+        argument_repeated: float = 0.0,
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
         argument_capitalized_prob: float = 0,
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
-        options_documented: bool = False,
+        options_documented: float = 0.0,
         option_documented_prob: float = 0.9,
         options_pattern_capitalized: str = True,
         option_argument_separator: dict[str, bool] = {
@@ -94,6 +94,8 @@ class HelpGenerator:
         },
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: bool = False,
+        options_shortcut_capitalized_prob: float = 0.001,
+        options_shortcut_all_caps: float = 0,
         number_of_commands: int | list[int] = 0,
         number_of_arguments: int | list[int] = 0,
         number_of_options: int | list[int] = 0,
@@ -171,7 +173,6 @@ class HelpGenerator:
         self._options_documented = options_documented
         self._option_documented_prob = option_documented_prob
         self._option_argument_separator = option_argument_separator
-        self._options_shortcut = options_shortcut
         self._options_pattern_capitalized = options_pattern_capitalized
         self._options_mutually_exclusive = {
             "probability": options_mutually_exclusive["probability"],
@@ -179,6 +180,9 @@ class HelpGenerator:
                 options_mutually_exclusive["group"]
             ),
         }
+        self._options_shortcut = options_shortcut
+        self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
+        self._options_shortcut_all_caps = options_shortcut_all_caps
         # Program description probability
         self._description_before = description_before
         self._program_description_prob = program_description_prob
@@ -325,7 +329,7 @@ class HelpGenerator:
         # try again, just once and expect it doesn't happen again.
         if option in self._option_names:
             option = make_option(**options_arguments)
-            
+
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
 
@@ -371,11 +375,16 @@ class HelpGenerator:
         Returns:
             str: argument name
         """
-        arg = make_argument(capitalized_prob=self._argument_capitalized_prob, style=self._argument_style)
+        arg = make_argument(
+            capitalized_prob=self._argument_capitalized_prob, style=self._argument_style
+        )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
         if arg in self._argument_names:
-            arg = make_argument(capitalized_prob=self._argument_capitalized_prob, style=self._argument_style)
+            arg = make_argument(
+                capitalized_prob=self._argument_capitalized_prob,
+                style=self._argument_style,
+            )
 
         self._argument_names.append(arg)
         if random.random() > optional_probability:
@@ -422,9 +431,7 @@ class HelpGenerator:
         start = self._current_length + len(program) + 1
         # initial_length is a control variable to check the
         # length of the program before and after calling textwrap.
-        # initial_length = len(program) + self._current_length
         initial_length = self._current_length
-        print("INITIAL_LENGTH", initial_length)
         annotations = []
 
         cmds = self._commands(total=self.number_of_commands)
@@ -451,8 +458,12 @@ class HelpGenerator:
         )
 
         if self._options_shortcut:
+
             # TODO: The probability should be defined outside:
-            program += " " + options_shortcut(capitalized_probability=0.001, all_caps=0)
+            program += " " + options_shortcut(
+                capitalized_probability=self._options_shortcut_capitalized_prob,
+                all_caps=self._options_shortcut_all_caps,
+            )
 
         if self._option_argument_separator["separator"]:
             sep = "--"
@@ -509,7 +520,6 @@ class HelpGenerator:
             end = start + len(a)
             program += " " + a
             annotations.append((ARG, start, end))
-            # self._annotations.append((ARG, start, end))
 
         # FIXME: AS THE TEXT IS WRAPPED TO HAVE A NICE ERROR MESSAGE,
         # THE ANNOTATIONS ARE MISPLACED AND THE POSITIONS MUST BE
