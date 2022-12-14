@@ -78,6 +78,7 @@ class HelpGenerator:
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
         argument_capitalized_prob: float = 0,
+        argument_optional_prob: float = 0.5,
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
@@ -167,6 +168,7 @@ class HelpGenerator:
         self._argument_documented_prob = argument_documented_prob
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
         self._argument_capitalized_prob = argument_capitalized_prob
+        self._argument_optional_prob = argument_optional_prob
 
         self._options_section = options_section
         self._options_header = options_header
@@ -401,8 +403,10 @@ class HelpGenerator:
         Returns:
             list[str]: _description_
         """
-        # TODO: Allow adding the probability
-        args = [self._argument(optional_probability=0.5) for _ in range(total)]
+        args = [
+            self._argument(optional_probability=self._argument_optional_prob)
+            for _ in range(total)
+        ]
 
         if random.random() > (1 - self._argument_repeated):
             if len(args) > 0:
