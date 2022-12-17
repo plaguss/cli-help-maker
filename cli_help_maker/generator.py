@@ -99,17 +99,13 @@ class HelpGenerator:
         options_pattern_capitalized: str = True,
         option_argument_separator: bool = False,
         option_argument_required: bool = False,
-        # option_argument_separator: dict[str, bool] = {
-        #     "separator": False,
-        #     "required": False,
-        # },
         # TODO: Modify the following parameters to be simple parameters
-        # options_mutually_exclusive_prob: float,
-        # options_mutually_exclusive_group: int,
-        options_mutually_exclusive: dict[str, float | int] = {
-            "probability": 0.0,
-            "group": 0,
-        },
+        options_mutually_exclusive_prob: float = 0.0,
+        options_mutually_exclusive_group: int = 0,
+        # options_mutually_exclusive: dict[str, float | int] = {
+        #     "probability": 0.0,
+        #     "group": 0,
+        # },
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: float = 0,
         options_shortcut_capitalized_prob: float = 0.001,
@@ -199,12 +195,8 @@ class HelpGenerator:
         self._option_argument_separator = option_argument_separator
         self._option_argument_required = option_argument_required
         self._options_pattern_capitalized = options_pattern_capitalized
-        self._options_mutually_exclusive = {
-            "probability": options_mutually_exclusive["probability"],
-            "group": self._check_number_of_elements(
-                options_mutually_exclusive["group"]
-            ),
-        }
+        self._options_mutually_exclusive_prob = options_mutually_exclusive_prob,
+        self._options_mutually_exclusive_group = self._check_number_of_elements(options_mutually_exclusive_group)
         self._options_shortcut = options_shortcut
         self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
         self._options_shortcut_all_caps = options_shortcut_all_caps
@@ -530,8 +522,10 @@ class HelpGenerator:
             # If there are elements to group, do it first, then keep going:
             opts = do_mutually_exclusive_groups(
                 elements=opts,
-                probability=self._options_mutually_exclusive["probability"],
-                groups=self._options_mutually_exclusive["group"],
+                probability=self._options_mutually_exclusive_prob,#["probability"],
+                groups=self._options_mutually_exclusive_group,#["group"],
+                # probability=self._options_mutually_exclusive["probability"],
+                # groups=self._options_mutually_exclusive["group"],
                 optional_probability=self._exclusive_group_optional_prob,
             )
 
