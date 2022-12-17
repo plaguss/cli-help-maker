@@ -8,6 +8,9 @@ import json
 import random
 import textwrap
 from textwrap import indent
+from pathlib import Path
+from itertools import accumulate
+from typing import Callable
 
 from .utils import (
     capitalize,
@@ -22,6 +25,27 @@ from .utils import (
     section_pattern,
     usage_pattern,
 )
+
+try:
+    from ruamel.yaml import YAML
+
+except ModuleNotFoundError:
+    from warnings import warn
+
+    warn(
+        textwrap.dedent(
+            """To create a dataset from a yaml config file,
+        first you need to install ruaml.yaml, either installing
+        all the dependencies:
+
+        $ pip install cli-help-maker[all]
+
+        or installing ruaml.yaml:
+
+        $ pip install ruaml.yaml
+        """
+        )
+    )
 
 text_wrapper = textwrap.TextWrapper(width=78)
 
@@ -71,13 +95,17 @@ class HelpGenerator:
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
-        options_documented: float = 0.0,
         option_documented_prob: float = 0.9,
         options_pattern_capitalized: str = True,
-        option_argument_separator: dict[str, bool] = {
-            "separator": False,
-            "required": False,
-        },
+        option_argument_separator: bool = False,
+        option_argument_required: bool = False,
+        # option_argument_separator: dict[str, bool] = {
+        #     "separator": False,
+        #     "required": False,
+        # },
+        # TODO: Modify the following parameters to be simple parameters
+        # options_mutually_exclusive_prob: float,
+        # options_mutually_exclusive_group: int,
         options_mutually_exclusive: dict[str, float | int] = {
             "probability": 0.0,
             "group": 0,
@@ -167,9 +195,9 @@ class HelpGenerator:
 
         self._options_section = options_section
         self._options_header = options_header
-        self._options_documented = options_documented
         self._option_documented_prob = option_documented_prob
         self._option_argument_separator = option_argument_separator
+        self._option_argument_required = option_argument_required
         self._options_pattern_capitalized = options_pattern_capitalized
         self._options_mutually_exclusive = {
             "probability": options_mutually_exclusive["probability"],
@@ -285,7 +313,9 @@ class HelpGenerator:
 
         return commands
 
-    def _option(self, options_arguments: dict, in_section: bool, from_program: bool) -> str:
+    def _option(
+        self, options_arguments: dict, in_section: bool, from_program: bool
+    ) -> str:
         """Creates an option for the message.
 
         A small subset of the arguments is generated here, those are allowed
@@ -343,7 +373,9 @@ class HelpGenerator:
 
         return option
 
-    def _options(self, total: int = 0, in_section: bool = False, from_program: bool = False) -> list[str]:
+    def _options(
+        self, total: int = 0, in_section: bool = False, from_program: bool = False
+    ) -> list[str]:
         """Adds options to the help message.
 
         If `options_header` is set on construction, these will
@@ -479,9 +511,9 @@ class HelpGenerator:
                 all_caps=self._options_shortcut_all_caps,
             )
 
-        if self._option_argument_separator["separator"]:
+        if self._option_argument_separator:
             sep = "--"
-            if self._option_argument_separator["required"]:
+            if self._option_argument_required:
                 sep = maybe_do_optional(sep, probability=0.5)
 
             # TODO: Not yet decided if this should be annotated
@@ -491,7 +523,9 @@ class HelpGenerator:
         if opt_shortcut:
             # With options shortcut, these get written directly in a section
             opts = self._options(
-                total=self.number_of_options, in_section=options_in_section, from_program=True
+                total=self.number_of_options,
+                in_section=options_in_section,
+                from_program=True,
             )
             # If there are elements to group, do it first, then keep going:
             opts = do_mutually_exclusive_groups(
@@ -767,7 +801,6 @@ class HelpGenerator:
                 self._docs_limited = True
                 longest_opt = self._max_level_docs
 
-            print("ELEMENTS", elements)
             for e, length in zip(elements, elem_lengths):
                 elem = indent(e, " " * self._indent_spaces)
 
@@ -932,3 +965,77 @@ class HelpGenerator:
         return json.dumps(
             {"message": msg, "annotations": self._annotations}, ensure_ascii=False
         )
+
+
+def read_config(config: Path) -> dict[str, str]:
+    """Reads a configuration file with the parameters to create a dataset
+    of help messages.
+
+    Parses the values and sets the generator functions for each argument.
+
+    TODO: Document each argument in dataset.yaml:
+    For example, indent spaces has a dist parameter which defines the type
+    of distribution that should be used to generate the data.
+    allowed ones are `uniform` and `constant` for the moment.
+    Each dist has arguments, that would depend on the distribution.
+    dist:
+      uniform
+    arguments:
+      min: 2
+      max: 4
+
+    Args:
+        config (Path) Path to the yaml config file.
+
+    Notes
+        An example of this file can be seen [here](https://github.com/plaguss/cli-help-maker/dataset.yaml)
+    """
+    yaml = YAML(typ="safe")  # default, if not specfied, is 'rt' (round-trip)
+    with open(config, "r") as f:
+        config = yaml.load(f)
+
+    arguments = config["arguments"]
+    conf = {}
+    for k, v in arguments.items():
+        # TODO: Check for any argument not found
+        try:
+            conf[k] = get_distribution(v)
+        except KeyError:
+            raise KeyError(f"Argument ({f}) isn't informed, please provide the info.")
+    return conf
+
+
+def get_distribution(
+    data: dict[str, str | dict[str, int]]
+) -> Callable:
+    """Get the distribution of an argument
+
+    Args:
+        data (dict) : TODO: Explain the possibilities.
+            Gets the info from the field in the yaml file.
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        Callable: _description_
+    """
+    dist, parameters = data["dist"], data["parameters"]
+    if dist == "constant":
+        return lambda: parameters["value"]
+    elif dist == "range":
+        return lambda: random.choice(parameters["values"])
+    elif dist == "uniform-discrete":
+        return lambda: random.randint(parameters["min"], parameters["max"])
+    elif dist == "uniform-continuous":
+        return (
+            lambda: parameters["min"]
+            + (parameters["max"] - parameters["min"]) * random.random()
+        )
+    elif dist == "custom":
+        return lambda: random.choices(
+            population=parameters["values"],
+            cum_weights=list(accumulate(parameters["p"])),
+        )
+    else:
+        raise ValueError(f"`dist` field not defined: {dist}")
