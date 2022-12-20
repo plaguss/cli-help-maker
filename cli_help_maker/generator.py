@@ -8,9 +8,6 @@ import json
 import random
 import textwrap
 from textwrap import indent
-from pathlib import Path
-from itertools import accumulate
-from typing import Callable
 
 from .utils import (
     capitalize,
@@ -26,26 +23,6 @@ from .utils import (
     usage_pattern,
 )
 
-try:
-    from ruamel.yaml import YAML
-
-except ModuleNotFoundError:
-    from warnings import warn
-
-    warn(
-        textwrap.dedent(
-            """To create a dataset from a yaml config file,
-        first you need to install ruaml.yaml, either installing
-        all the dependencies:
-
-        $ pip install cli-help-maker[all]
-
-        or installing ruaml.yaml:
-
-        $ pip install ruaml.yaml
-        """
-        )
-    )
 
 text_wrapper = textwrap.TextWrapper(width=78)
 
@@ -959,77 +936,3 @@ class HelpGenerator:
         return json.dumps(
             {"message": msg, "annotations": self._annotations}, ensure_ascii=False
         )
-
-
-def read_config(config: Path) -> dict[str, str]:
-    """Reads a configuration file with the parameters to create a dataset
-    of help messages.
-
-    Parses the values and sets the generator functions for each argument.
-
-    TODO: Document each argument in dataset.yaml:
-    For example, indent spaces has a dist parameter which defines the type
-    of distribution that should be used to generate the data.
-    allowed ones are `uniform` and `constant` for the moment.
-    Each dist has arguments, that would depend on the distribution.
-    dist:
-      uniform
-    arguments:
-      min: 2
-      max: 4
-
-    Args:
-        config (Path) Path to the yaml config file.
-
-    Notes
-        An example of this file can be seen [here](https://github.com/plaguss/cli-help-maker/dataset.yaml)
-    """
-    yaml = YAML(typ="safe")  # default, if not specfied, is 'rt' (round-trip)
-    with open(config, "r") as f:
-        config = yaml.load(f)
-
-    arguments = config["arguments"]
-    conf = {}
-    for k, v in arguments.items():
-        # TODO: Check for any argument not found
-        try:
-            conf[k] = get_distribution(v)
-        except KeyError:
-            raise KeyError(f"Argument ({f}) isn't informed, please provide the info.")
-    return conf
-
-
-def get_distribution(
-    data: dict[str, str | dict[str, int]]
-) -> Callable:
-    """Get the distribution of an argument
-
-    Args:
-        data (dict) : TODO: Explain the possibilities.
-            Gets the info from the field in the yaml file.
-
-    Raises:
-        ValueError: _description_
-
-    Returns:
-        Callable: _description_
-    """
-    dist, parameters = data["dist"], data["parameters"]
-    if dist == "constant":
-        return lambda: parameters["value"]
-    elif dist == "range":
-        return lambda: random.choice(parameters["values"])
-    elif dist == "uniform-discrete":
-        return lambda: random.randint(parameters["min"], parameters["max"])
-    elif dist == "uniform-continuous":
-        return (
-            lambda: parameters["min"]
-            + (parameters["max"] - parameters["min"]) * random.random()
-        )
-    elif dist == "custom":
-        return lambda: random.choices(
-            population=parameters["values"],
-            cum_weights=list(accumulate(parameters["p"])),
-        )
-    else:
-        raise ValueError(f"`dist` field not defined: {dist}")
