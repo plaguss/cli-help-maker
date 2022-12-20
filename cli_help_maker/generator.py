@@ -23,7 +23,6 @@ from .utils import (
     usage_pattern,
 )
 
-
 text_wrapper = textwrap.TextWrapper(width=78)
 
 
@@ -172,8 +171,10 @@ class HelpGenerator:
         self._option_argument_separator = option_argument_separator
         self._option_argument_required = option_argument_required
         self._options_pattern_capitalized = options_pattern_capitalized
-        self._options_mutually_exclusive_prob = options_mutually_exclusive_prob,
-        self._options_mutually_exclusive_group = self._check_number_of_elements(options_mutually_exclusive_group)
+        self._options_mutually_exclusive_prob = (options_mutually_exclusive_prob,)
+        self._options_mutually_exclusive_group = self._check_number_of_elements(
+            options_mutually_exclusive_group
+        )
         self._options_shortcut = options_shortcut
         self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
         self._options_shortcut_all_caps = options_shortcut_all_caps
@@ -499,8 +500,8 @@ class HelpGenerator:
             # If there are elements to group, do it first, then keep going:
             opts = do_mutually_exclusive_groups(
                 elements=opts,
-                probability=self._options_mutually_exclusive_prob,#["probability"],
-                groups=self._options_mutually_exclusive_group,#["group"],
+                probability=self._options_mutually_exclusive_prob,  # ["probability"],
+                groups=self._options_mutually_exclusive_group,  # ["group"],
                 # probability=self._options_mutually_exclusive["probability"],
                 # groups=self._options_mutually_exclusive["group"],
                 optional_probability=self._exclusive_group_optional_prob,
