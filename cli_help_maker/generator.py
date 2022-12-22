@@ -16,11 +16,11 @@ from .utils import (
     make_argument,
     make_option,
     make_paragraph,
-    make_word,
     maybe_do_optional,
     options_shortcut,
     section_pattern,
     usage_pattern,
+    get_word
 )
 
 text_wrapper = textwrap.TextWrapper(width=78)
@@ -75,13 +75,8 @@ class HelpGenerator:
         options_pattern_capitalized: str = True,
         option_argument_separator: bool = False,
         option_argument_required: bool = False,
-        # TODO: Modify the following parameters to be simple parameters
         options_mutually_exclusive_prob: float = 0.0,
         options_mutually_exclusive_group: int = 0,
-        # options_mutually_exclusive: dict[str, float | int] = {
-        #     "probability": 0.0,
-        #     "group": 0,
-        # },
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: float = 0,
         options_shortcut_capitalized_prob: float = 0.001,
@@ -143,10 +138,10 @@ class HelpGenerator:
         self._option_names = []
         self._argument_names = []
         # Layout options
-        self._total_width = total_width
+        self._total_width = int(total_width)
         self._prob_name_capitalized = prob_name_capitalized
         self._options_style = options_style
-        self._indent_spaces = indent_spaces
+        self._indent_spaces = int(indent_spaces)
         self._usage_section = usage_section  # Used to split the programs in a section
         # or in the same line with indentation.
         self._usage_pattern_capitalized = usage_pattern_capitalized
@@ -261,7 +256,7 @@ class HelpGenerator:
 
     def _program_name(self) -> str:
         """Returns a name for the app."""
-        return capitalize(make_word(), probability=self._prob_name_capitalized)
+        return capitalize(get_word(), probability=self._prob_name_capitalized)
 
     def _commands(self, total: int = 0) -> list[str]:
         """Returns commands for the app.
@@ -390,7 +385,8 @@ class HelpGenerator:
             str: argument name
         """
         arg = make_argument(
-            capitalized_prob=self._argument_capitalized_prob, style=self._arguments_style
+            capitalized_prob=self._argument_capitalized_prob,
+            style=self._arguments_style,
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
