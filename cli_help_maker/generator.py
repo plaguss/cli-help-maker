@@ -62,7 +62,7 @@ class HelpGenerator:
         commands_documented_prob: float = 0.01,
         arguments_section: bool = False,
         arguments_header: bool = False,
-        argument_style: str = "between_brackets",
+        arguments_style: str = "between_brackets",
         argument_repeated: float = 0.0,
         argument_documented_prob: float = 0.9,
         arguments_pattern_capitalized: str = True,
@@ -158,7 +158,7 @@ class HelpGenerator:
 
         self._arguments_section = arguments_section
         self._arguments_header = arguments_header
-        self._argument_style = argument_style
+        self._arguments_style = arguments_style
         self._argument_repeated = argument_repeated
         self._argument_documented_prob = argument_documented_prob
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
@@ -390,14 +390,14 @@ class HelpGenerator:
             str: argument name
         """
         arg = make_argument(
-            capitalized_prob=self._argument_capitalized_prob, style=self._argument_style
+            capitalized_prob=self._argument_capitalized_prob, style=self._arguments_style
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
         if arg in self._argument_names:
             arg = make_argument(
                 capitalized_prob=self._argument_capitalized_prob,
-                style=self._argument_style,
+                style=self._arguments_style,
             )
 
         self._argument_names.append(arg)
