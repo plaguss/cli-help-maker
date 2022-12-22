@@ -1,12 +1,12 @@
-version: 0.0.1
+version: "0.0.1"
 size: 10
 arguments:
   indent_spaces:
-    dist: range
+    dist: set
     parameters:
       values: [2, 4]
   total_width:
-    dist: range
+    dist: set
     parameters:
       values: [70, 78, 80, 90, 100, 120]
   prob_name_capitalized:
@@ -15,7 +15,7 @@ arguments:
       min: 0
       max: 1
   description_before:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   program_description_prob:
@@ -24,11 +24,11 @@ arguments:
       min: 0
       max: 1
   usage_section:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   usage_pattern_capitalized:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   commands_section:
@@ -52,11 +52,11 @@ arguments:
       min: 0
       max: 1
   arguments_section:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   arguments_header:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   arguments_style:
@@ -75,9 +75,9 @@ arguments:
       min: 0
       max: 1
   arguments_pattern_capitalized:
-    dist: range
+    dist: set
     parameters:
-      vakues: [0, 1]
+      values: [0, 1]
   argument_capitalized_prob:
     dist: uniform-continuous
     parameters:
@@ -90,11 +90,11 @@ arguments:
       max: 1
   # options_style: dict = {}  # Not defined
   options_section:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   options_header:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   option_documented_prob:
@@ -103,7 +103,7 @@ arguments:
       min: 0
       max: 1
   options_pattern_capitalized:
-    dist: range
+    dist: set
     parameters:
       values: [0, 1]
   options_shortcut:
