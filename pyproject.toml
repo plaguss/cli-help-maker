@@ -33,10 +33,12 @@ dev = [
 all = [
     "ruamel.yaml>=0.17.21",
     "typer>=0.7.0",
-    "srsly>=2.4.5"
+    "srsly>=2.4.5",
+    "pydantic>=1.10.2"
 ]
-# [project.scripts]
-# prog_name = "module:function"
+
+[project.scripts]
+cli-help-maker = "cli_help_maker.main:app"
 
 [project.urls]
 #Documentation = "https://flit.pypa.io"
