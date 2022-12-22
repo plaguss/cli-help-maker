@@ -11,7 +11,7 @@ from warnings import warn
 try:
     from nltk.corpus import words
 
-    total_words = len(words.words())
+    word_list = words.words()
 
 except ModuleNotFoundError:
     import textwrap
@@ -35,7 +35,7 @@ def get_word() -> str:
     """Selects a word from the wordlist corpora defined in:
     https://www.nltk.org/book/ch02.html#code-unusual
     """
-    return words.words()[random.randint(0, total_words)]
+    return word_list[random.randint(0, len(word_list))].lower()
 
 
 # Letter frequency, obtained from the following link with the "script":
@@ -400,7 +400,7 @@ def make_composed_word() -> str:
     made-up probabilities."""
     return "-".join(
         [
-            make_word()
+            get_word()
             for _ in range(
                 random.choices(
                     population=range(1, 5), cum_weights=[0.6, 0.95, 0.99, 1]
