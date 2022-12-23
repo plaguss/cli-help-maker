@@ -50,7 +50,7 @@ from cli_help_maker.utils import highlight_message
 generator = gen.HelpGenerator(
     indent_spaces=2,
     program_description_prob=1,
-    argument_style="all_caps",
+    arguments_style="all_caps",
     argument_repeated=0.9,  # TODO: Needs a probability
     arguments_header=True,
     arguments_section=True,

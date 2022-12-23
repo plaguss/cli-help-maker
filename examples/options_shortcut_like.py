@@ -26,7 +26,7 @@ from cli_help_maker.utils import highlight_message
 generator = gen.HelpGenerator(
     indent_spaces=2,
     program_description_prob=1,
-    argument_style="between_brackets",
+    arguments_style="between_brackets",
     argument_documented_prob=1.0,
     options_section=True,
     options_header=True,

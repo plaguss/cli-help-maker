@@ -30,17 +30,17 @@ from cli_help_maker.utils import highlight_message
 generator = gen.HelpGenerator(
     indent_spaces=2,
     usage_section=True,
+    usage_pattern_capitalized=True,
     program_description_prob=1.0,
     description_before=False,
     arguments_section=True,
     arguments_header=True,
+    arguments_style="all_caps",
     options_section=True,
     options_header=True,
-    usage_pattern_capitalized=True,
     number_of_commands=2,
     number_of_options=[1, 3],
     number_of_arguments=1,
-    argument_style="all_caps",
     exclusive_programs=2,
 )
 

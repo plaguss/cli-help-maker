@@ -22,7 +22,7 @@ generator = gen.HelpGenerator(
     number_of_commands=2,
     number_of_options=[1, 3],
     number_of_arguments=[1, 2],
-    argument_style="between_brackets",
+    arguments_style="between_brackets",
     exclusive_programs=3,
 )
 

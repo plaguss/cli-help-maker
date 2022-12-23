@@ -24,8 +24,6 @@ Options:
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
@@ -36,7 +34,7 @@ generator = gen.HelpGenerator(
     options_section=True,
     options_header=True,
     options_shortcut=False,
-    argument_style="between_brackets",
+    arguments_style="between_brackets",
     argument_documented_prob=0.0,
     argument_repeated=True,
     option_documented_prob=1.0,
