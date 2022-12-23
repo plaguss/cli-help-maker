@@ -23,6 +23,7 @@ dynamic = ['version', 'description']
 [project.optional-dependencies]
 test = [
     "pytest>=7.2.0",
+    "pytest-cov>=4.0.0",
     "nox>=2022.11.21"
 ]
 dev = [
@@ -41,6 +42,4 @@ all = [
 cli-help-maker = "cli_help_maker.main:app"
 
 [project.urls]
-#Documentation = "https://flit.pypa.io"
-#Changelog = "https://flit.pypa.io/en/stable/history.html"
 Source = "https://github.com/plaguss/cli-help-maker"
