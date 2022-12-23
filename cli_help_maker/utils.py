@@ -13,7 +13,7 @@ try:
 
     word_list = words.words()
 
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     import textwrap
 
     msg = textwrap.dedent(
@@ -139,10 +139,12 @@ def capitalize(content: str, probability: float = 0.5) -> str:
     return content
 
 
-def usage_pattern(capitalized: bool = True) -> str:
+def usage_pattern(capitalized: bool = True, upper: bool = False) -> str:
     usage = "usage: "
     if capitalized:
         return usage.capitalize()
+    if upper:
+        return usage.upper()
     return usage
 
 
@@ -212,6 +214,13 @@ def do_required(content: str) -> str:
         str: _description_
     """
     return f"({content})"
+
+
+def maybe_do_required(content: str, probability: float = 0.5) -> str:
+    """Equivalent to `maybe_do_optional` with `do_required`. """
+    if random.random() > (1 - probability):
+        return do_required(content)
+    return content
 
 
 def do_mutually_exclusive(content: list[str]) -> str:
@@ -307,7 +316,6 @@ def options_shortcut(
         https://github.com/jazzband/docopt-ng
     """
     options = capitalize("options", probability=capitalized_probability)
-    # shortcut = f"\[{options}]"
     shortcut = f"[{options}]"
     if all_caps:
         return shortcut.upper()
@@ -347,24 +355,24 @@ def paragraph_length() -> int:
     )[0]
 
 
-def randomize(probability: float = 1) -> Any:
-    """TODO:
-    Create a decorator to 'maybe apply' a function.
-    The decorator should insert a new argument to the
-    function which allows for applying it with certain probability.
-    """
+# def randomize(probability: float = 1) -> Any:
+#     """TODO:
+#     Create a decorator to 'maybe apply' a function.
+#     The decorator should insert a new argument to the
+#     function which allows for applying it with certain probability.
+#     """
 
-    def maybe_apply(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            value = args[0]
-            if random.random() > (1 - probability):
-                value = func(*args, **kwargs)
-            return value
+#     def maybe_apply(func):
+#         @wraps(func)
+#         def wrapper(*args, **kwargs):
+#             value = args[0]
+#             if random.random() > (1 - probability):
+#                 value = func(*args, **kwargs)
+#             return value
 
-        return wrapper
+#         return wrapper
 
-    return maybe_apply
+#     return maybe_apply
 
 
 def make_word() -> str:
@@ -386,8 +394,11 @@ def name_length(min_letters: int = 2, max_letters: int = 10) -> int:
 
     Corresponds to the program, i.e. `git`, `ls`.
     """
-    num_letters = random.randint(min_letters, max_letters)
-    return num_letters
+    if min_letters > max_letters:
+        low, high = max_letters, max_letters
+    else:
+        low, high = min_letters, max_letters
+    return random.randint(low, high)
 
 
 def argument_length(min_letters: int = 2, max_letters: int = 10) -> int:
