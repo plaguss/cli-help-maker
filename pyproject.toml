@@ -24,6 +24,7 @@ dynamic = ['version', 'description']
 test = [
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
+    "hypothesis>=6.61.0",
     "nox>=2022.11.21"
 ]
 dev = [
@@ -43,3 +44,6 @@ cli-help-maker = "cli_help_maker.main:app"
 
 [project.urls]
 Source = "https://github.com/plaguss/cli-help-maker"
+
+[tool.pytest]
+addopts = ["--cov=cli_help_maker", "--cov-report html"]
