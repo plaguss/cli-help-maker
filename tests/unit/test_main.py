@@ -39,10 +39,30 @@ def test_get_distribution():
     }
     assert isinstance(main.get_distribution(uniform_discrete_dist)(), int)
 
+
+@pytest.mark.parametrize(
+    "a",
+    [
+        {},
+        {"dist": "constant", "parameters": {"v": 1}},
+        {"dist": "set", "parameters": {"v": 1}},
+        {"dist": "uniform-discrete", "parameters": {"v": 1}},
+        {"dist": "uniform-continuous", "parameters": {"v": 1}},
+        {"dist": "custom", "parameters": {"v": 1}},
+    ],
+)
+def test_get_distribution_errored(a):
     with pytest.raises(ValueError):
-        assert main.get_distribution({"dist": "con", "parameters": {"value": 1}})() == 1
-    with pytest.raises(ValueError):
-        assert (
-            main.get_distribution({"dist": "constant", "parameters": {"other": 1}})()
-            == 1
-        )
+        assert main.get_distribution(a)() == 1
+
+    # with pytest.raises(ValueError):
+    #     assert (
+    #         main.get_distribution({"dist": "constant", "parameters": {"other": 1}})()
+    #         == 1
+    #     )
+
+    # with pytest.raises(ValueError):
+    #     assert (
+    #         main.get_distribution({"dist": "constant", "parameters": {"other": 1}})()
+    #         == 1
+    #     )
