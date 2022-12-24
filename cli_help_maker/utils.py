@@ -31,6 +31,11 @@ except ModuleNotFoundError:  # pragma: no cover
     warn(msg)
 
 
+# A bool to change between text generated from letter frequencies
+# or selected from the nltk corpus. If True, uses statistics
+TEXT_FROM_STATISTICS = False
+
+
 def get_word() -> str:
     """Selects a word from the wordlist corpora defined in:
     https://www.nltk.org/book/ch02.html#code-unusual
@@ -217,7 +222,7 @@ def do_required(content: str) -> str:
 
 
 def maybe_do_required(content: str, probability: float = 0.5) -> str:
-    """Equivalent to `maybe_do_optional` with `do_required`. """
+    """Equivalent to `maybe_do_optional` with `do_required`."""
     if random.random() > (1 - probability):
         return do_required(content)
     return content
@@ -376,34 +381,62 @@ def paragraph_length() -> int:
 
 
 def make_word() -> str:
+    """Creates a random word from made up letters. The letters
+    are obtained from observed frequencies.
+
+    Note:
+        See https://math.wvu.edu/~hdiamond/Math222F17/Sigurd_et_al-2004-Studia_Linguistica.pdf
+    """
     return "".join(random.choices(LETTERS, weights=LETTER_FREQUENCIES, k=word_length()))
 
 
-def make_sentence():
+def make_sentence(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
+    """Creates a sentence.
+
+    Args:
+        use_statistics (bool, optional):
+            If set to True uses the statistical way, otherwise uses nltk corpus.
+            Defaults to TEXT_FROM_STATISTICS.
+
+    Returns:
+        str: made up sentence to fill the messages with content.
+    """
+    gen = make_word if use_statistics else get_word
     return capitalize(
-        " ".join([make_word() for _ in range(sentence_length())]), probability=1
+        " ".join([gen() for _ in range(sentence_length())]), probability=1
     )
 
 
-def make_paragraph():
-    return ". ".join([make_sentence() for _ in range(paragraph_length())])[:-1] + "."
+def make_paragraph(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
+    """Creates a paragraph, in a similar way as `make_sentence`.
 
+    Args:
+        use_statistics (bool, optional):
+            If set to True uses the statistical way, otherwise uses nltk corpus.
+            Defaults to TEXT_FROM_STATISTICS.
 
-def name_length(min_letters: int = 2, max_letters: int = 10) -> int:
-    """Returns the number of characters in a name.
-
-    Corresponds to the program, i.e. `git`, `ls`.
+    Returns:
+        str: made up sentence to fill the messages with content.
     """
-    if min_letters > max_letters:
-        low, high = max_letters, max_letters
-    else:
-        low, high = min_letters, max_letters
-    return random.randint(low, high)
+    return (
+        ". ".join(
+            [
+                make_sentence(use_statistics=use_statistics)
+                for _ in range(paragraph_length())
+            ]
+        )[:-1]
+        + "."
+    )
 
 
-def argument_length(min_letters: int = 2, max_letters: int = 10) -> int:
-    """Currently a copy of the name sampler."""
-    return name_length(min_letters=min_letters, max_letters=max_letters)
+# def argument_length(min_letters: int = 2, max_letters: int = 10) -> int:
+#     """
+#     """
+#     if min_letters > max_letters:
+#         low, high = max_letters, max_letters
+#     else:
+#         low, high = min_letters, max_letters
+#     return random.randint(low, high)
 
 
 def make_composed_word() -> str:
@@ -486,7 +519,8 @@ def make_option(
         probability_value_cap (float, optional)
             Probability of the default value of the option being capitalized.
             Defaults to 0.
-        style (str, optional). Argument passed to make_argument.
+        style (str, optional). Argument passed to make_argument, only applies to
+            a value for the option.
         any_number (bool, optional). Argument passed to make_argument.
     """
     option = ""
