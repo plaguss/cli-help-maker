@@ -298,6 +298,21 @@ make_options_args = []
             True,
             "-a PTEROBRANCHIA...",
         ),
+        (
+            False,
+            True,
+            True,
+            0,
+            0,
+            " ",
+            "=",
+            ", ",
+            0,
+            0,
+            "all_caps",
+            True,
+            "--areel-spaniellike=PTEROBRANCHIA...",
+        ),    
     ],
 )
 def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected):
