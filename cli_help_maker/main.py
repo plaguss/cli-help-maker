@@ -16,7 +16,7 @@ from cli_help_maker.generator import HelpGenerator
 try:
     from ruamel.yaml import YAML
 
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     # TODO: Extend this message for any library outside of the main
     # dependencies.
     from warnings import warn
@@ -104,19 +104,27 @@ def read_config(config: Path) -> dict[str, str]:
 
 
 def get_distribution(data: dict[str, str | dict[str, int]]) -> Callable:
-    """Get the distribution of an argument
+    """Get the distribution of an argument from the config yaml.
 
     Args:
-        data (dict) : TODO: Explain the possibilities.
-            Gets the info from the field in the yaml file.
+        data (dict[str, str | dict[str, int]]):
+            Corresponds to an argument in yaml parsed:
+            dist: uniform-continuous
+            parameters:
+                min: 0
+                max: 1
 
     Raises:
-        ValueError: _description_
+        ValueError: When a value is not allowed.
+            Mainly checks the values expected in the parameters field for each
+            of the 'distributions' selected.
 
     Returns:
-        Callable: _description_
+        generator (Callable): A function to generate values according to
+            the distribution selected.
     """
-    dist, parameters = data["dist"], data["parameters"]
+    dist, parameters = data.get("dist"), data.get("parameters")
+
     if dist == "constant":
         if "value" not in parameters.keys():
             raise ValueError(
