@@ -3,10 +3,10 @@ a help message and more.
 """
 
 import random
-from functools import wraps
 from itertools import accumulate
-from typing import Any
 from warnings import warn
+from rich.console import Console
+from rich.text import Text
 
 try:
     from nltk.corpus import words
@@ -526,7 +526,8 @@ def make_option(
     option = ""
     name = capitalize(make_composed_word(), probability=probability_name_cap)
 
-    if len(name) == 1:
+    # The following block is not covered just to avoid mocking the name
+    if len(name) == 1:  # pragma: no cover
         # In case the name generated has only one letter,
         # force it to be only a short option.
         short = True
@@ -535,7 +536,6 @@ def make_option(
     value = make_argument(
         capitalized_prob=probability_value_cap, style=style, any_number=any_number
     )
-    # TODO: Simplify in a function
     if short:
         option += "-" + capitalize(name[0], short_capitalized_prob)
         if with_value:
@@ -553,16 +553,16 @@ def make_option(
     return option
 
 
-def highlight_message(annotations: dict[str, str | tuple[str, int, int]]) -> None:
+# Function not covered. It uses rich under the hood, works as long as
+# the annotations are properly generated. Maybe will get back to this
+# function in the future.
+def highlight_message(annotations: dict[str, str | tuple[str, int, int]]) -> None:  # pragma: no cover
     """Helper function to print a message with the different labels visualized
     in the console.
 
     Args:
         annotations (str): The output obtained from HelpGenerator.annotations
     """
-    from rich.console import Console
-    from rich.text import Text
-
     console = Console()
 
     msg = annotations["message"]
