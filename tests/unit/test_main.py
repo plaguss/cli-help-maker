@@ -55,14 +55,10 @@ def test_get_distribution_errored(a):
     with pytest.raises(ValueError):
         assert main.get_distribution(a)() == 1
 
-    # with pytest.raises(ValueError):
-    #     assert (
-    #         main.get_distribution({"dist": "constant", "parameters": {"other": 1}})()
-    #         == 1
-    #     )
 
-    # with pytest.raises(ValueError):
-    #     assert (
-    #         main.get_distribution({"dist": "constant", "parameters": {"other": 1}})()
-    #         == 1
-    #     )
+def test_argument_generator():
+    conf = main.read_config(dataset_path)
+    output = main.argument_generator(conf["size"], conf["arguments"])
+    element = next(output)
+    assert isinstance(element, dict)
+    assert len(element) == 32
