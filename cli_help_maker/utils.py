@@ -5,6 +5,7 @@ a help message and more.
 import random
 from itertools import accumulate
 from warnings import warn
+
 from rich.console import Console
 from rich.text import Text
 
@@ -556,7 +557,9 @@ def make_option(
 # Function not covered. It uses rich under the hood, works as long as
 # the annotations are properly generated. Maybe will get back to this
 # function in the future.
-def highlight_message(annotations: dict[str, str | tuple[str, int, int]]) -> None:  # pragma: no cover
+def highlight_message(
+    annotations: dict[str, str | tuple[str, int, int]]
+) -> None:  # pragma: no cover
     """Helper function to print a message with the different labels visualized
     in the console.
 
