@@ -4,7 +4,7 @@ import random
 import textwrap
 from itertools import accumulate
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterable
 
 import srsly
 import typer
@@ -165,6 +165,73 @@ def get_distribution(data: dict[str, str | dict[str, int]]) -> Callable:
         raise ValueError(f"`dist` field not defined: {dist}")
 
 
+HelpArgs = dict[str, int | float | bool | str | list[int]]
+
+
+def annotation_writer(
+    conf: dict, input_generator: dict[str, Callable]
+) -> Iterable[tuple[HelpArgs, HelpGenerator]]:
+    """Helper function to pass the values from
+    TODO: DESCRIBE
+
+    The HelpArgs file can be read using pandas.read_json(lines=True)
+    Args:
+        conf (_type_): _description_
+        input_generator (_type_): _description_
+
+    Yields:
+        _type_: _description_
+    """
+    for _ in track(range(conf["size"])):  # Value extracted from conf
+        # TODO: Get the values from the input generator here to keep track
+        # of the values that generated each message (for future use).
+        kwargs = {
+            "indent_spaces": input_generator["indent_spaces"](),
+            "total_width": input_generator["total_width"](),
+            "prob_name_capitalized": input_generator["prob_name_capitalized"](),
+            "description_before": input_generator["description_before"](),
+            "program_description_prob": input_generator["program_description_prob"](),
+            "usage_section": input_generator["usage_section"](),
+            "usage_pattern_capitalized": input_generator["usage_pattern_capitalized"](),
+            "commands_section": input_generator["commands_section"](),
+            "commands_header": input_generator["commands_header"](),
+            "commands_capitalized": input_generator["commands_capitalized"](),
+            "commands_documented_prob": input_generator["commands_documented_prob"](),
+            "arguments_section": input_generator["arguments_section"](),
+            "arguments_header": input_generator["arguments_header"](),
+            "arguments_style": input_generator["arguments_style"](),
+            "argument_repeated": input_generator["argument_repeated"](),
+            "argument_documented_prob": input_generator["argument_documented_prob"](),
+            "arguments_pattern_capitalized": input_generator[
+                "arguments_pattern_capitalized"
+            ](),
+            "argument_capitalized_prob": input_generator["argument_capitalized_prob"](),
+            "argument_optional_prob": input_generator["argument_optional_prob"](),
+            "options_section": input_generator["options_section"](),
+            "options_header": input_generator["options_header"](),
+            "option_documented_prob": input_generator["option_documented_prob"](),
+            "options_pattern_capitalized": input_generator[
+                "options_pattern_capitalized"
+            ](),
+            "options_shortcut": input_generator["options_shortcut"](),
+            "options_shortcut_capitalized_prob": input_generator[
+                "options_shortcut_capitalized_prob"
+            ](),
+            "options_shortcut_all_caps": input_generator["options_shortcut_all_caps"](),
+            "exclusive_group_optional_prob": input_generator[
+                "exclusive_group_optional_prob"
+            ](),
+            "options_mutually_exclusive_prob": input_generator[
+                "options_mutually_exclusive_prob"
+            ](),
+            "number_of_commands": input_generator["number_of_commands"](),
+            "number_of_arguments": input_generator["number_of_arguments"](),
+            "number_of_options": input_generator["number_of_options"](),
+            "exclusive_programs": input_generator["exclusive_programs"](),
+        }
+        yield kwargs
+
+
 @app.command()
 def main(
     input_path: Path = typer.Argument(
@@ -173,96 +240,46 @@ def main(
     output_path: Path = typer.Argument(
         "",
         dir_okay=False,
-        help="Filename of the output path, the file extension will be .jsonl.",
+        help="Dirname of the output path, the file extension will be .jsonl.",
     ),
-    # spacy_format: bool = typer.Option(
-    #     False,
-    #     "-s",
-    #     "--spacy",
-    #     help="Generate both a .jsonl and a .spacy files. Defaults to False",
-    # ),
 ):
     """Function to generate a dataset of cli help messages from a .yaml file
     with the info.
+
+    A folder will be generated containing two jsonl files:
+    - arguments.jsonl:
+        Contains the arguments that were generated, these can be associated to each
+        help message for further analysis.
+    - dataset.jsonl:
+        A dataset of help messages with annotations.
     """
-    if output_path.suffix != ".jsonl":
-        raise ValueError(f"output_path must have a filename ending in .jsonl or .spacy")
-    # TODO: Use as a guide to translate the .jsonl file to a .spacy
-    # https://github.com/explosion/projects/blob/v3/tutorials/ner_drugs/scripts/preprocess.py
-    # TODO: Start here a DocBin?
+    if not output_path.is_dir():
+        output_path.mkdir()
+    # if output_path.suffix != ".jsonl":
+    #     raise ValueError(f"output_path must have a filename ending in .jsonl or .spacy")
 
     conf = read_config(input_path)
     input_generator = conf["arguments"]
 
-    def annotation_writer(conf, input_generator):
-        for i in track(range(conf["size"])):  # Value extracted from conf
-            yield HelpGenerator(
-                **{
-                    "indent_spaces": input_generator["indent_spaces"](),
-                    "total_width": input_generator["total_width"](),
-                    "prob_name_capitalized": input_generator["prob_name_capitalized"](),
-                    "description_before": input_generator["description_before"](),
-                    "program_description_prob": input_generator[
-                        "program_description_prob"
-                    ](),
-                    "usage_section": input_generator["usage_section"](),
-                    "usage_pattern_capitalized": input_generator[
-                        "usage_pattern_capitalized"
-                    ](),
-                    "commands_section": input_generator["commands_section"](),
-                    "commands_header": input_generator["commands_header"](),
-                    "commands_capitalized": input_generator["commands_capitalized"](),
-                    "commands_documented_prob": input_generator[
-                        "commands_documented_prob"
-                    ](),
-                    "arguments_section": input_generator["arguments_section"](),
-                    "arguments_header": input_generator["arguments_header"](),
-                    "arguments_style": input_generator["arguments_style"](),
-                    "argument_repeated": input_generator["argument_repeated"](),
-                    "argument_documented_prob": input_generator[
-                        "argument_documented_prob"
-                    ](),
-                    "arguments_pattern_capitalized": input_generator[
-                        "arguments_pattern_capitalized"
-                    ](),
-                    "argument_capitalized_prob": input_generator[
-                        "argument_capitalized_prob"
-                    ](),
-                    "argument_optional_prob": input_generator[
-                        "argument_optional_prob"
-                    ](),
-                    "options_section": input_generator["options_section"](),
-                    "options_header": input_generator["options_header"](),
-                    "option_documented_prob": input_generator[
-                        "option_documented_prob"
-                    ](),
-                    "options_pattern_capitalized": input_generator[
-                        "options_pattern_capitalized"
-                    ](),
-                    "options_shortcut": input_generator["options_shortcut"](),
-                    "options_shortcut_capitalized_prob": input_generator[
-                        "options_shortcut_capitalized_prob"
-                    ](),
-                    "options_shortcut_all_caps": input_generator[
-                        "options_shortcut_all_caps"
-                    ](),
-                    "exclusive_group_optional_prob": input_generator[
-                        "exclusive_group_optional_prob"
-                    ](),
-                    "options_mutually_exclusive_prob": input_generator[
-                        "options_mutually_exclusive_prob"
-                    ](),
-                    "number_of_commands": input_generator["number_of_commands"](),
-                    "number_of_arguments": input_generator["number_of_arguments"](),
-                    "number_of_options": input_generator["number_of_options"](),
-                    "exclusive_programs": input_generator["exclusive_programs"](),
-                }
-            )
-
+    kwargs = list(annotation_writer(conf, input_generator))
     srsly.write_jsonl(
-        path=output_path,
-        lines=(gen.annotations for gen in annotation_writer(conf, input_generator)),
+        path=output_path / "arguments.jsonl",
+        lines=(kw for kw in kwargs),
     )
+    srsly.write_jsonl(
+        path=output_path / "dataset.jsonl",
+        lines=(HelpGenerator(**kw).annotations for kw in kwargs),
+    )
+# 
+    # srsly.write_jsonl(
+    #     path=output_path,
+    #     lines=(HelpGenerator(**kwargs).annotations for kwargs in annotation_writer(conf, input_generator)),
+    # )
+    # srsly.write_jsonl(
+    #     path=output_path,
+    #     lines=(gen.annotations for gen in annotation_writer(conf, input_generator)),
+    # )
+    print(f"Directory generated at: {output_path}")
 
 
 if __name__ == "__main__":
