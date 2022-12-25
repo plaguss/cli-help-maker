@@ -168,8 +168,8 @@ def get_distribution(data: dict[str, str | dict[str, int]]) -> Callable:
 HelpArgs = dict[str, int | float | bool | str | list[int]]
 
 
-def annotation_writer(
-    conf: dict, input_generator: dict[str, Callable]
+def argument_generator(
+    size: int, input_generator: dict[str, Callable]
 ) -> Iterable[tuple[HelpArgs, HelpGenerator]]:
     """Helper function to pass the values from
     TODO: DESCRIBE
@@ -182,7 +182,7 @@ def annotation_writer(
     Yields:
         _type_: _description_
     """
-    for _ in track(range(conf["size"])):  # Value extracted from conf
+    for _ in track(range(size)):  # Value extracted from conf
         # TODO: Get the values from the input generator here to keep track
         # of the values that generated each message (for future use).
         kwargs = {
@@ -255,13 +255,11 @@ def main(
     """
     if not output_path.is_dir():
         output_path.mkdir()
-    # if output_path.suffix != ".jsonl":
-    #     raise ValueError(f"output_path must have a filename ending in .jsonl or .spacy")
 
     conf = read_config(input_path)
     input_generator = conf["arguments"]
 
-    kwargs = list(annotation_writer(conf, input_generator))
+    kwargs = list(argument_generator(conf["size"], input_generator))
     srsly.write_jsonl(
         path=output_path / "arguments.jsonl",
         lines=(kw for kw in kwargs),
@@ -270,15 +268,6 @@ def main(
         path=output_path / "dataset.jsonl",
         lines=(HelpGenerator(**kw).annotations for kw in kwargs),
     )
-# 
-    # srsly.write_jsonl(
-    #     path=output_path,
-    #     lines=(HelpGenerator(**kwargs).annotations for kwargs in annotation_writer(conf, input_generator)),
-    # )
-    # srsly.write_jsonl(
-    #     path=output_path,
-    #     lines=(gen.annotations for gen in annotation_writer(conf, input_generator)),
-    # )
     print(f"Directory generated at: {output_path}")
 
 
