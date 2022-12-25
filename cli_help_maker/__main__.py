@@ -1,1 +1,0 @@
-print("cli-help-maker")
