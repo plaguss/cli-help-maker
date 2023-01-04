@@ -33,7 +33,8 @@ generator = gen.HelpGenerator(
     options_shortcut=True,
     option_documented_prob=1,
     options_style={"style": "all_caps", "short_long_separator": ", "},
-    options_mutually_exclusive={"probability": 1 / 15, "group": 2},
+    options_mutually_exclusive_prob=1/15,
+    options_mutually_exclusive_group=2,
     number_of_commands=0,
     number_of_options=6,
     number_of_arguments=1,
@@ -42,7 +43,5 @@ generator = gen.HelpGenerator(
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

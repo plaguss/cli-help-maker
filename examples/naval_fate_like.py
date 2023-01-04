@@ -43,13 +43,10 @@ generator = gen.HelpGenerator(
     number_of_commands=[0, 2],
     number_of_options=[0, 2],
     number_of_arguments=[0, 3],
-    # arguments_same_line=True,
     exclusive_programs=6,
 )
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

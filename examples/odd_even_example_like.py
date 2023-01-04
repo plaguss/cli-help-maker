@@ -22,7 +22,8 @@ generator = gen.HelpGenerator(
     options_header=True,
     option_documented_prob=0.0,
     options_style={"short": True, "long": True, "with_value": False},
-    options_mutually_exclusive={"probability": 1, "group": 2},
+    options_mutually_exclusive_prob=1,
+    options_mutually_exclusive_group=2,
     number_of_commands=1,
     number_of_options=1,
     number_of_arguments=1,
@@ -30,7 +31,5 @@ generator = gen.HelpGenerator(
 )
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

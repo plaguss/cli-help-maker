@@ -27,8 +27,6 @@ usage: nyia in [options] [--] [<efxr-se>]...
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
@@ -46,17 +44,13 @@ generator = gen.HelpGenerator(
     usage_pattern_capitalized=False,
     number_of_commands=1,
     number_of_options=13,
-    option_argument_separator={
-        "separator": True,
-        "required": True,
-    },
+    option_argument_separator=True,
+    option_argument_required=True,
     options_shortcut=True,
     number_of_arguments=1,
 )
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)
