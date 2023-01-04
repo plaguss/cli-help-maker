@@ -247,7 +247,7 @@ class HelpGenerator:
             else:
                 l, h = int(number[0]), int(number[1])
         else:
-            raise ValueError(f"Must be an int or a list of 2 ints")
+            raise ValueError(f"Must be an int or a list of 2 ints, given: {number}")
         return l, h
 
     def _description(self) -> str:
