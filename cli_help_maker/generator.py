@@ -239,7 +239,7 @@ class HelpGenerator:
 
         This arguments are expected to be an int, a list with one or two ints.
         """
-        if isinstance(number, int):
+        if isinstance(number, (int, float)):
             l, h = int(number), int(number)
         elif isinstance(number, list):
             if len(number) == 1:
