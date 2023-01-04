@@ -4,7 +4,7 @@ import random
 import textwrap
 from itertools import accumulate
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Optional
 
 import srsly
 import typer
@@ -235,12 +235,11 @@ def argument_generator(
 @app.command()
 def main(
     input_path: Path = typer.Argument(
-        "", exists=True, dir_okay=False, help="Path pointing to the .yaml file."
+        ..., exists=True, dir_okay=False, help="Path pointing to the .yaml file."
     ),
-    output_path: Path = typer.Argument(
-        "",
-        dir_okay=True,
-        help="Dirname of the output path",
+    output_path: Optional[Path] = typer.Argument(
+        None,
+        help="Dirname of the output path. If not given, creates a directr¡iry with the version number",
     ),
 ):
     """Function to generate a dataset of cli help messages from a .yaml file
@@ -255,11 +254,13 @@ def main(
     - dataset.jsonl:
         A dataset of help messages with annotations.
     """
-    if not output_path.is_dir():
-        output_path.mkdir()
 
     conf = read_config(input_path)
     input_generator = conf["arguments"]
+    if output_path is None:
+        output_path = input_path.parent / ("v" + conf["version"])
+        if not output_path.is_dir():
+            output_path.mkdir()
 
     kwargs = list(argument_generator(conf["size"], input_generator))
     srsly.write_jsonl(
