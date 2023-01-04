@@ -240,12 +240,12 @@ class HelpGenerator:
         This arguments are expected to be an int, a list with one or two ints.
         """
         if isinstance(number, int):
-            l, h = number, number
+            l, h = int(number), int(number)
         elif isinstance(number, list):
             if len(number) == 1:
-                l, h = number, number
+                l, h = int(number), int(number)
             else:
-                l, h = number[0], number[1]
+                l, h = int(number[0]), int(number[1])
         else:
             raise ValueError(f"Must be an int or a list of 2 ints")
         return l, h
