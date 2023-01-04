@@ -166,7 +166,7 @@ class HelpGenerator:
         self._option_argument_separator = option_argument_separator
         self._option_argument_required = option_argument_required
         self._options_pattern_capitalized = options_pattern_capitalized
-        self._options_mutually_exclusive_prob = (options_mutually_exclusive_prob,)
+        self._options_mutually_exclusive_prob = options_mutually_exclusive_prob
         self._options_mutually_exclusive_group = self._check_number_of_elements(
             options_mutually_exclusive_group
         )
@@ -252,7 +252,10 @@ class HelpGenerator:
 
     def _description(self) -> str:
         desc = make_paragraph()
-        return text_wrapper.fill(desc)
+        return textwrap.fill(
+            desc, width=self._total_width, initial_indent="", subsequent_indent=""
+        )
+        # return text_wrapper.fill(desc)
 
     def _program_name(self) -> str:
         """Returns a name for the app."""
@@ -459,19 +462,18 @@ class HelpGenerator:
             end = start + len(c)
             program += " " + c
             annotations.append((CMD, start, end))
-            # self._annotations.append((CMD, start, end))
 
+        # FIXME: THE INDENTATION HAS A MUCH BIGGER LENGTH AND FORCES textwrap
+        # TO WRITE EVERYTHING IN A COLUMN
         # For the length of the indentation, the relevant part are the program
         # name and subcommands
         subsequent_indent = (
-            len(program)
-            + len(usage_pattern(capitalized=self._usage_pattern_capitalized))
+            # len(program)  # TODO: when a program is to long, this forces to indent the text as a column
+            +len(usage_pattern(capitalized=self._usage_pattern_capitalized))
             + 1
         )
         opt_shortcut = random.random() > (1 - self._options_shortcut)
         if opt_shortcut:
-
-            # TODO: The probability should be defined outside:
             program += " " + options_shortcut(
                 capitalized_probability=self._options_shortcut_capitalized_prob,
                 all_caps=self._options_shortcut_all_caps,
@@ -486,42 +488,40 @@ class HelpGenerator:
             program += " " + sep
 
         # 3) options
-        if opt_shortcut:
-            # With options shortcut, these get written directly in a section
-            opts = self._options(
-                total=self.number_of_options,
-                in_section=options_in_section,
-                from_program=True,
-            )
-            # If there are elements to group, do it first, then keep going:
-            opts = do_mutually_exclusive_groups(
-                elements=opts,
-                probability=self._options_mutually_exclusive_prob,  # ["probability"],
-                groups=self._options_mutually_exclusive_group,  # ["group"],
-                # probability=self._options_mutually_exclusive["probability"],
-                # groups=self._options_mutually_exclusive["group"],
-                optional_probability=self._exclusive_group_optional_prob,
-            )
+        # if opt_shortcut:  # TODO: Should be used here?
+        # With options shortcut, these get written directly in a section
+        opts = self._options(
+            total=self.number_of_options,
+            in_section=options_in_section,
+            from_program=True,
+        )
+        # If there are elements to group, do it first, then keep going:
+        opts = do_mutually_exclusive_groups(
+            elements=opts,
+            probability=self._options_mutually_exclusive_prob,  # ["probability"],
+            groups=self._options_mutually_exclusive_group,  # ["group"],
+            optional_probability=self._exclusive_group_optional_prob,
+        )
 
-            for i, o in enumerate(opts):
-                # Only add the option if contained anything.
-                if len(o) > 0:
-                    if not "|" in o:
-                        # Check for the pipe operator to avoid possibly making
-                        # the argument twice optional.
-                        o = maybe_do_optional(o, probability=0.5)
+        for i, o in enumerate(opts):
+            # Only add the option if contained anything.
+            if len(o) > 0:
+                if not "|" in o:
+                    # Check for the pipe operator to avoid possibly making
+                    # the argument twice optional.
+                    o = maybe_do_optional(o, probability=0.5)
 
-                    if (i == 0) and (len(cmds) == 0):
-                        start = self._current_length + len(program) + 1
-                    else:
-                        # If there was at least one command added, start
-                        # from there
-                        start = end + 1
+                if i == 0:
+                    # if (i == 0) and (len(cmds) == 0):
+                    start = self._current_length + len(program) + 1
+                else:
+                    # If there was at least one command added, start
+                    # from there
+                    start = end + 1
 
-                    end = start + len(o)
-                    program += " " + o
-                    annotations.append((OPT, start, end))
-                    # self._annotations.append((OPT, start, end))
+                end = start + len(o)
+                program += " " + o
+                annotations.append((OPT, start, end))
 
         # 4) arguments
         args = self._arguments(total=self.number_of_arguments)
@@ -678,7 +678,6 @@ class HelpGenerator:
                             program[(start - initial_length) : (end - initial_length)],
                         )
                         self._annotations.append((label, start + old_inc, end + inc))
-                        # self._annotations.append((label, start + old_inc + 1, end + inc + 1))
                         remain += 1
 
                     else:
@@ -697,7 +696,6 @@ class HelpGenerator:
                                 )
                             ],
                         )
-                        # self._annotations.append((label, start + inc - 1, end + inc - 1))
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
 
