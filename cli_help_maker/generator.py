@@ -922,15 +922,14 @@ class HelpGenerator:
         return self.help_message
 
     @property
-    def annotations(self) -> str:
-        """Returns the help message annotated with the content.
-
-        It is created as a json lines (jsonl), to create a dataset
-        in this format.
+    def annotations(self) -> dict[str, str | list[tuple[str, int, int]]]:
+        """Returns the message ready as an input for a NER model.
+        Its a dict with the content in the message key, and
+        the labels in the annotations key. The annotations correspond
+        to a list of tuples with 3 elements, the label, the character where
+        the label starts in the string, and the end.
+        This object is easily written to a jsonl file.
         """
         self._help_message = ""
         msg = self.sample()
         return {"message": msg, "annotations": self._annotations}
-        # return json.dumps(
-        #     {"message": msg, "annotations": self._annotations}, ensure_ascii=False
-        # )
