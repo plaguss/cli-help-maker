@@ -258,7 +258,7 @@ def main(
     conf = read_config(input_path)
     input_generator = conf["arguments"]
     if output_path is None:
-        output_path = input_path.parent / ("v" + conf["version"])
+        output_path = input_path.parent / ("dataset_v" + conf["version"])
         if not output_path.is_dir():
             output_path.mkdir()
 
