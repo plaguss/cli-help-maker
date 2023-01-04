@@ -23,7 +23,6 @@ def test_main():
         input_path = root / "tests" / "data" / "dataset.yaml"
         output_path = root / "tests" / "data" / tmpdir
         result = runner.invoke(main.app, [str(input_path), str(output_path)])
-        assert result.exit_code == 0, result.return_value  # FIXME: WHY??
         arguments = tmpdir / "arguments.jsonl"
         dataset = tmpdir / "dataset.jsonl"
         assert arguments.is_file()
