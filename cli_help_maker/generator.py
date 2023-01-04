@@ -13,6 +13,7 @@ from .utils import (
     capitalize,
     do_mutually_exclusive_groups,
     do_optional,
+    get_word,
     make_argument,
     make_option,
     make_paragraph,
@@ -20,7 +21,6 @@ from .utils import (
     options_shortcut,
     section_pattern,
     usage_pattern,
-    get_word
 )
 
 text_wrapper = textwrap.TextWrapper(width=78)
@@ -179,7 +179,7 @@ class HelpGenerator:
         self._description_before = description_before
         self._program_description_prob = program_description_prob
         self._read_from_stdin = read_from_stdin
-        self._exclusive_programs = exclusive_programs
+        self._exclusive_programs = int(exclusive_programs)
 
         # Explain this is to allow working with a number of
         # exclusive_programs > 1
@@ -930,6 +930,7 @@ class HelpGenerator:
         """
         self._help_message = ""
         msg = self.sample()
-        return json.dumps(
-            {"message": msg, "annotations": self._annotations}, ensure_ascii=False
-        )
+        return {"message": msg, "annotations": self._annotations}
+        # return json.dumps(
+        #     {"message": msg, "annotations": self._annotations}, ensure_ascii=False
+        # )
