@@ -239,17 +239,19 @@ def main(
     ),
     output_path: Path = typer.Argument(
         "",
-        dir_okay=False,
-        help="Dirname of the output path, the file extension will be .jsonl.",
+        dir_okay=True,
+        help="Dirname of the output path",
     ),
 ):
     """Function to generate a dataset of cli help messages from a .yaml file
     with the info.
 
     A folder will be generated containing two jsonl files:
+
     - arguments.jsonl:
         Contains the arguments that were generated, these can be associated to each
         help message for further analysis.
+
     - dataset.jsonl:
         A dataset of help messages with annotations.
     """
