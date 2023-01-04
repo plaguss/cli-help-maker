@@ -11,10 +11,10 @@ def integration_tests(session):
     session.run("pytest", "tests/integration")
 
 
-@nox.session(reuse_venv=True)
+@nox.session
 def tests_with_coverage(session):
     session.run("flit", "install", "--deps", "develop")
-    session.run("python", "-m", "pytest", "--cov=cli_help_maker")
+    session.run("python", "-m", "pytest", "tests", "--cov=cli_help_maker", "--cov-config=pyproject.toml", "--cov-report=term-missing")
 
 
 @nox.session
