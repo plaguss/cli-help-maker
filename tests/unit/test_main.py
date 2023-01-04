@@ -3,10 +3,10 @@
 import pathlib
 
 import pytest
-
 from cli_help_maker import main
 
-dataset_path = pathlib.Path(__file__).resolve().parent.parent.parent / "dataset.yaml"
+root = pathlib.Path(__file__).resolve().parent.parent.parent
+dataset_path = root / "dataset.yaml"
 
 
 def test_read_config():

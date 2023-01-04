@@ -1,8 +1,10 @@
 """Tests for utility functions. """
 
-import cli_help_maker.utils as ut
-import pytest
 import random
+
+import pytest
+
+import cli_help_maker.utils as ut
 
 FIXED_SEED = 6798
 
@@ -312,7 +314,7 @@ make_options_args = []
             "all_caps",
             True,
             "--areel-spaniellike=PTEROBRANCHIA...",
-        ),    
+        ),
     ],
 )
 def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected):
