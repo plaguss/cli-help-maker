@@ -190,6 +190,7 @@ def argument_generator(
             "total_width": input_generator["total_width"](),
             "prob_name_capitalized": input_generator["prob_name_capitalized"](),
             "description_before": input_generator["description_before"](),
+            "description_after": input_generator["description_after"](),
             "program_description_prob": input_generator["program_description_prob"](),
             "usage_section": input_generator["usage_section"](),
             "usage_pattern_capitalized": input_generator["usage_pattern_capitalized"](),
