@@ -4,7 +4,6 @@ Currently only docopt is allowed.
 """
 
 import difflib
-import json
 import random
 import textwrap
 from textwrap import indent
@@ -170,7 +169,7 @@ class HelpGenerator:
         self._options_mutually_exclusive_group = self._check_number_of_elements(
             options_mutually_exclusive_group
         )
-        self._options_shortcut = options_shortcut
+        self._options_shortcut = random.random() > (1 - options_shortcut)
         self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
         self._options_shortcut_all_caps = options_shortcut_all_caps
 
@@ -185,6 +184,10 @@ class HelpGenerator:
         # exclusive_programs > 1
         self.number_of_commands = number_of_commands
         self.number_of_arguments = number_of_arguments
+        # If options_shortcut is True, write at least one option
+        if self._options_shortcut:
+            number_of_options = max(1, number_of_options)
+
         self.number_of_options = number_of_options
 
         # Variables used to control the proper positioning
@@ -259,7 +262,8 @@ class HelpGenerator:
 
     def _program_name(self) -> str:
         """Returns a name for the app."""
-        return capitalize(get_word(), probability=self._prob_name_capitalized)
+        return get_word()
+        # return capitalize(get_word(), probability=self._prob_name_capitalized)
 
     def _commands(self, total: int = 0) -> list[str]:
         """Returns commands for the app.
@@ -324,10 +328,6 @@ class HelpGenerator:
         options_arguments.update(**self._options_style)
 
         option = make_option(**options_arguments)
-        # if the name was already generated (it can happen statistically...)
-        # try again, just once and expect it doesn't happen again.
-        if option in self._option_names:
-            option = make_option(**options_arguments)
 
         # TODO: Consider using only the long name if available.
         self._option_names.append(option)
@@ -373,8 +373,13 @@ class HelpGenerator:
             "probability_value_cap": 0,
             "style": random.choice(["between_brackets", "all_caps"]),
         }
-
-        options = [self._option(kwargs, in_section, from_program) for _ in range(total)]
+        # Easy way to remove optiosn which appear from make_option as ""
+        options = []
+        for _ in range(total):
+            o = self._option(kwargs, in_section, from_program)
+            if len(o) > 0:
+                options.append(o)
+        # options = [self._option(kwargs, in_section, from_program) for _ in range(total)]
         return options
 
     def _argument(self, optional_probability: float = 0.5) -> str:
@@ -387,15 +392,18 @@ class HelpGenerator:
         Returns:
             str: argument name
         """
+        # FIXME: Arguments capitalized exist?
         arg = make_argument(
-            capitalized_prob=self._argument_capitalized_prob,
+            capitalized_prob=0,
+            # capitalized_prob=self._argument_capitalized_prob,
             style=self._arguments_style,
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
         if arg in self._argument_names:
             arg = make_argument(
-                capitalized_prob=self._argument_capitalized_prob,
+                capitalized_prob=0,
+                # capitalized_prob=self._argument_capitalized_prob,
                 style=self._arguments_style,
             )
 
@@ -430,6 +438,39 @@ class HelpGenerator:
             return self._description()
         return ""
 
+    def _add_programs(self, prog_name: str) -> None:
+        usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
+        self.help_message += usage
+
+        if self._usage_section:
+            self.help_message += "\n"
+            indent_level = self._indent_spaces
+        else:
+            indent_level = len(usage)
+
+        # If there are no exclusive programs, dont't do anything.
+        # It there is one, let the options generated to be different
+        # (as if added in a section).
+        # Otherwise, generate multiple programs as is.
+        def add_prog(indent_level, prog_name, options_in_section):
+            self.help_message += " " * indent_level
+            self._add_program(prog_name, options_in_section=options_in_section)
+            self.help_message += "\n"
+
+        if self._exclusive_programs == 1:
+            if self._usage_section:
+                level = indent_level
+            else:
+                level = 0
+
+            add_prog(level, prog_name, self._options_section)
+
+        elif self._exclusive_programs > 1:
+            for i in range(self._exclusive_programs):
+                level = 0 if (i == 0 and not self._usage_section) else indent_level
+                add_prog(level, prog_name, False)
+
+    # TODO: Split the internal pieces in functions to simplify reading
     def _add_program(self, prog_name: str, options_in_section: bool = False) -> None:
         """Single line program generator.
 
@@ -455,7 +496,6 @@ class HelpGenerator:
             if i == 0:
                 # In the first step, start counting from the current program
                 # length, plus the program name, plus 1 for the initial ' '.
-                # start = self._current_length + len(prog_name) + 1
                 end = start + len(c)
             else:
                 start = end + 1
@@ -472,8 +512,7 @@ class HelpGenerator:
             +len(usage_pattern(capitalized=self._usage_pattern_capitalized))
             + 1
         )
-        opt_shortcut = random.random() > (1 - self._options_shortcut)
-        if opt_shortcut:
+        if self._options_shortcut:
             program += " " + options_shortcut(
                 capitalized_probability=self._options_shortcut_capitalized_prob,
                 all_caps=self._options_shortcut_all_caps,
@@ -488,8 +527,6 @@ class HelpGenerator:
             program += " " + sep
 
         # 3) options
-        # if opt_shortcut:  # TODO: Should be used here?
-        # With options shortcut, these get written directly in a section
         opts = self._options(
             total=self.number_of_options,
             in_section=options_in_section,
@@ -498,10 +535,14 @@ class HelpGenerator:
         # If there are elements to group, do it first, then keep going:
         opts = do_mutually_exclusive_groups(
             elements=opts,
-            probability=self._options_mutually_exclusive_prob,  # ["probability"],
-            groups=self._options_mutually_exclusive_group,  # ["group"],
+            probability=self._options_mutually_exclusive_prob,
+            groups=self._options_mutually_exclusive_group,
             optional_probability=self._exclusive_group_optional_prob,
         )
+        # With options shortcut, these get written directly in a section
+        if self._options_shortcut:
+            self._option_names = opts
+            opts = []
 
         for i, o in enumerate(opts):
             # Only add the option if contained anything.
@@ -511,8 +552,8 @@ class HelpGenerator:
                     # the argument twice optional.
                     o = maybe_do_optional(o, probability=0.5)
 
-                if i == 0:
-                    # if (i == 0) and (len(cmds) == 0):
+                # if i == 0:
+                if (i == 0) and (len(cmds) == 0):
                     start = self._current_length + len(program) + 1
                 else:
                     # If there was at least one command added, start
@@ -521,6 +562,7 @@ class HelpGenerator:
 
                 end = start + len(o)
                 program += " " + o
+                # print("annotations OPT (start, end)", (start, end))
                 annotations.append((OPT, start, end))
 
         # 4) arguments
@@ -565,6 +607,7 @@ class HelpGenerator:
                 program if the total_width wasn't exceeded.
             annotations (list[tuple[str, int, int]]): List with 3 element tuple that
                 represents the label, the start and end of the label in the program.
+            initial_length (int)
         """
         # Compare only the length to see if they are the same
         if len(program) == len(filled_program):
@@ -572,6 +615,8 @@ class HelpGenerator:
                 self._annotations.append((label, start, end))
                 for label, start, end in annotations
             ]
+            # TODO: This is under testing
+            return
 
         blocks = list(
             difflib.SequenceMatcher(a=program, b=filled_program).get_matching_blocks()
@@ -581,18 +626,18 @@ class HelpGenerator:
 
         remain = 0  # Variable to avoid checking again blocks
         inc = 0
-        print("blocks", blocks)
+        # print("blocks", blocks)
         for label, start, end in annotations:
             for i, b in enumerate(blocks[remain:]):
                 if b.a == b.b == 0:
                     if end <= (b.size + initial_length):
                         # Example: (start 9, end 15) Match(a=0, b=0, size=78)
-                        print(
-                            "first block",
-                            (start, end),
-                            b,
-                            program[(start - initial_length) : (end - initial_length)],
-                        )
+                        # print(
+                        #     "first block",
+                        #     (start, end),
+                        #     b,
+                        #     program[(start - initial_length) : (end - initial_length)],
+                        # )
                         self._annotations.append((label, start, end))
 
                     elif (start <= (b.size + initial_length)) and (
@@ -601,15 +646,15 @@ class HelpGenerator:
                         # Example: (start 77, end 110) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
                         inc += b.b - b.a
-                        print(
-                            "first block and second",
-                            (start, end),
-                            (start, end + inc),
-                            b,
-                            filled_program[
-                                (start - initial_length) : (end + inc - initial_length)
-                            ],
-                        )
+                        # print(
+                        #     "first block and second",
+                        #     (start, end),
+                        #     (start, end + inc),
+                        #     b,
+                        #     filled_program[
+                        #         (start - initial_length) : (end + inc - initial_length)
+                        #     ],
+                        # )
                         self._annotations.append((label, start, end + inc))
                         remain += 1
 
@@ -618,16 +663,16 @@ class HelpGenerator:
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
                         inc += b.b - b.a
-                        print(
-                            "next block",
-                            (start, end),
-                            (start + inc, end + inc),
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
+                        # print(
+                        #     "next block",
+                        #     (start, end),
+                        #     (start + inc, end + inc),
+                        #     filled_program[
+                        #         (start + inc - initial_length) : (
+                        #             end + inc - initial_length
+                        #         )
+                        #     ],
+                        # )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
 
@@ -641,17 +686,17 @@ class HelpGenerator:
                         # if (start > b.a) and (end <= (b.b + b.size)):
                         # General case
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        print(
-                            "second plus block",
-                            (start, end),
-                            (start + inc, end + inc),
-                            b,
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
+                        # print(
+                        #     "second plus block",
+                        #     (start, end),
+                        #     (start + inc, end + inc),
+                        #     b,
+                        #     filled_program[
+                        #         (start + inc - initial_length) : (
+                        #             end + inc - initial_length
+                        #         )
+                        #     ],
+                        # )
                         self._annotations.append((label, start + inc, end + inc))
 
                     # FIXME: The two following blocks have problems
@@ -665,18 +710,18 @@ class HelpGenerator:
                         b = blocks[i + 1]
                         old_inc = inc
                         inc += b.b - b.a  # + 1
-                        print(
-                            "second plus between blocks",
-                            (start, end),
-                            (start + old_inc, end + inc),
-                            b,
-                            filled_program[
-                                (start + old_inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                            program[(start - initial_length) : (end - initial_length)],
-                        )
+                        # print(
+                        #     "second plus between blocks",
+                        #     (start, end),
+                        #     (start + old_inc, end + inc),
+                        #     b,
+                        #     filled_program[
+                        #         (start + old_inc - initial_length) : (
+                        #             end + inc - initial_length
+                        #         )
+                        #     ],
+                        #     program[(start - initial_length) : (end - initial_length)],
+                        # )
                         self._annotations.append((label, start + old_inc, end + inc))
                         remain += 1
 
@@ -685,53 +730,21 @@ class HelpGenerator:
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         b = blocks[i + 1]
                         inc += b.b - b.a  # - 1  # Add one for the \n ?
-                        print(
-                            "next block from second",
-                            (start, end),
-                            (start + inc, end + inc),
-                            b,
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
+                        # print(
+                        #     "next block from second",
+                        #     (start, end),
+                        #     (start + inc, end + inc),
+                        #     b,
+                        #     filled_program[
+                        #         (start + inc - initial_length) : (
+                        #             end + inc - initial_length
+                        #         )
+                        #     ],
+                        # )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
 
                     break
-
-    def _add_programs(self, prog_name: str) -> None:
-        usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
-        self.help_message += usage
-
-        if self._usage_section:
-            self.help_message += "\n"
-            indent_level = self._indent_spaces
-        else:
-            indent_level = len(usage)
-
-        # If there are no exclusive programs, dont't do anything.
-        # It there is one, let the options generated to be different
-        # (as if added in a section).
-        # Otherwise, generate multiple programs as is.
-        def add_prog(indent_level, prog_name, options_in_section):
-            self.help_message += " " * indent_level
-            self._add_program(prog_name, options_in_section=options_in_section)
-            self.help_message += "\n"
-
-        if self._exclusive_programs == 1:
-            if self._usage_section:
-                level = indent_level
-            else:
-                level = 0
-
-            add_prog(level, prog_name, self._options_section)
-
-        elif self._exclusive_programs > 1:
-            for i in range(self._exclusive_programs):
-                level = 0 if (i == 0 and not self._usage_section) else indent_level
-                add_prog(level, prog_name, False)
 
     def _add_section(
         self,
@@ -741,8 +754,8 @@ class HelpGenerator:
         capitalized: bool,
         documented_prob: float,
     ) -> None:
-        """add_options_section and add_arguments_section can be generalized in this function
-        with proper arguments.
+        """Adds a section with options or arguments to list and maybe explain (document)
+        the elements.
 
         Args:
             elements (list[str]) Contains the arguments or options to add.
@@ -754,6 +767,11 @@ class HelpGenerator:
             documented_prob (float) Probability of options or arguments being documented.
         """
         if len(elements) > 0:
+            if len(elements[0]) == 0:
+                # To avoid writing a section header in the case that only one 
+                # option is generated and has no content
+                return
+
             if has_header:
                 self.help_message += section_pattern(
                     section_name, capitalized=capitalized
@@ -768,6 +786,9 @@ class HelpGenerator:
                 longest_opt = self._max_level_docs
 
             for e, length in zip(elements, elem_lengths):
+                # FIXME: This should be controlled in the moment the string is created
+                if len(e) == 0:
+                    continue
                 elem = indent(e, " " * self._indent_spaces)
 
                 start = self._current_length + len(" " * self._indent_spaces)
@@ -864,7 +885,7 @@ class HelpGenerator:
         if self._description_before:
             self._add_program_description()
 
-        prog_name = self._program_name()
+        prog_name = capitalize(self._program_name(), probability=self._prob_name_capitalized)
         self._add_programs(prog_name)
 
         if not self._description_before:
