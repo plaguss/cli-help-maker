@@ -18,6 +18,10 @@ arguments:
     dist: set
     parameters:
       values: [0, 1]
+  description_after:
+    dist: set
+    parameters:
+      values: [0, 1]
   program_description_prob:
     dist: uniform-continuous
     parameters:
