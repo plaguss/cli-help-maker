@@ -361,26 +361,6 @@ def paragraph_length() -> int:
     )[0]
 
 
-# def randomize(probability: float = 1) -> Any:
-#     """TODO:
-#     Create a decorator to 'maybe apply' a function.
-#     The decorator should insert a new argument to the
-#     function which allows for applying it with certain probability.
-#     """
-
-#     def maybe_apply(func):
-#         @wraps(func)
-#         def wrapper(*args, **kwargs):
-#             value = args[0]
-#             if random.random() > (1 - probability):
-#                 value = func(*args, **kwargs)
-#             return value
-
-#         return wrapper
-
-#     return maybe_apply
-
-
 def make_word() -> str:
     """Creates a random word from made up letters. The letters
     are obtained from observed frequencies.
@@ -428,16 +408,6 @@ def make_paragraph(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
         )[:-1]
         + "."
     )
-
-
-# def argument_length(min_letters: int = 2, max_letters: int = 10) -> int:
-#     """
-#     """
-#     if min_letters > max_letters:
-#         low, high = max_letters, max_letters
-#     else:
-#         low, high = min_letters, max_letters
-#     return random.randint(low, high)
 
 
 def make_composed_word() -> str:
@@ -550,6 +520,10 @@ def make_option(
         if with_value:
             option += long_separator + value
             return option
+
+    if option == "":
+        # In case it wasn't properly generated, return as default a single letter
+        return "-" + name[0]
 
     return option
 
