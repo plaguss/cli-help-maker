@@ -1,5 +1,5 @@
 version: "0.0.1"
-size: 50
+size: 100
 arguments:
   indent_spaces:
     dist: set
@@ -37,10 +37,9 @@ arguments:
       p: [0.2, 0.8]
       values: [0, 1]
   commands_header:
-    dist: custom
+    dist: constant
     parameters:
-      p: [0.2, 0.8]
-      values: [0, 1]
+      value: 1
   commands_capitalized:
     dist: uniform-continuous
     parameters:
@@ -56,9 +55,12 @@ arguments:
     parameters:
       values: [0, 1]
   arguments_header:
-    dist: set
+    dist: constant
     parameters:
-      values: [0, 1]
+      value: 1
+    # dist: set
+    # parameters:
+    #   values: [0, 1]
   arguments_style:
     dist: custom
     parameters:
@@ -94,9 +96,12 @@ arguments:
     parameters:
       values: [0, 1]
   options_header:
-    dist: set
+    dist: constant
     parameters:
-      values: [0, 1]
+      value: 1
+    # dist: set
+    # parameters:
+    #   values: [0, 1]
   option_documented_prob:
     dist: uniform-continuous
     parameters:
@@ -117,10 +122,9 @@ arguments:
       min: 0
       max: 1
   options_shortcut_all_caps:
-    dist: uniform-continuous
+    dist: set
     parameters:
-      min: 0
-      max: 1
+      values: [0, 1]
   exclusive_group_optional_prob:
     dist: uniform-continuous
     parameters:
@@ -139,20 +143,23 @@ arguments:
       min: 0
       max: 6
   number_of_commands:
-    dist: uniform-discrete
+    dist: custom
     parameters:
-      min: 0
-      max: 15
+      # The probability is obtained from f(x)=(1/sum(e^-x)_{i=1}^{10}) e^-x, x in [1,... 10]
+      p: [0.6321, 0.2326, 0.0856, 0.0315, 0.0116, 0.0043, 0.0016, 0.0006, 0.0002, 0.00008]
+      values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   number_of_arguments:
-    dist: uniform-discrete
+    dist: custom
     parameters:
-      min: 0
-      max: 15
+      # The probability is obtained from f(x)=(1/sum(e^-x)_{i=1}^{10}) e^-x, x in [1,... 10]
+      p: [0.6321, 0.2326, 0.0856, 0.0315, 0.0116, 0.0043, 0.0016, 0.0006, 0.0002, 0.00008]
+      values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   number_of_options:
-    dist: uniform-discrete
+    dist: custom
     parameters:
-      min: 0
-      max: 15
+      # The probability is obtained from f(x)=(1/sum(e^-x)_{i=1}^{10}) e^-x, x in [1,... 10]
+      p: [0.6321, 0.2326, 0.0856, 0.0315, 0.0116, 0.0043, 0.0016, 0.0006, 0.0002, 0.00008]
+      values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   exclusive_programs:
     dist: custom
     parameters:
