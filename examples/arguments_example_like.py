@@ -1,5 +1,5 @@
 r"""Example script generating a message similar to:
-https://github.com/jazzband/docopt-ng/blob/master/examples/quick_example.py
+https://github.com/jazzband/docopt-ng/blob/master/examples/arguments_example.py
 
 $ python examples/arguments_example_like.py 
 Usage: 
@@ -23,6 +23,8 @@ Options:
                           utoge.
 
 """
+
+from rich import print
 
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
