@@ -1,4 +1,9 @@
-"""Tests for the expected data from calling the command line programs. """
+"""Tests for the expected data from calling the command line programs.
+
+To see all the prints:
+pytest -s -v tests/integration
+
+"""
 
 import pathlib
 import subprocess
