@@ -53,6 +53,7 @@ class HelpGenerator:
         prob_name_capitalized: float = 0,
         total_width: int = 78,
         description_before: bool = True,
+        description_after: bool = False,
         program_description_prob: float = 0.5,
         usage_section: bool = True,
         usage_pattern_capitalized: str = True,
@@ -177,6 +178,7 @@ class HelpGenerator:
         self._exclusive_group_optional_prob = exclusive_group_optional_prob
         # Program description probability
         self._description_before = description_before
+        self._description_after = description_after
         self._program_description_prob = program_description_prob
         self._read_from_stdin = read_from_stdin
         self._exclusive_programs = int(exclusive_programs)
@@ -875,11 +877,11 @@ class HelpGenerator:
             if random.random() > 0.2:
                 desc += "\n" * 2 + make_list(
                     elements=random.randint(2, 5), numbered=bool(random.randint(0, 1))
-                )
+                ) + "\n"
 
             if self._description_before:
                 msg = desc + "\n" * 2
-            else:
+            if self._description_after:
                 msg = "\n" + desc + "\n"
 
             self.help_message += msg
@@ -898,7 +900,7 @@ class HelpGenerator:
         )
         self._add_programs(prog_name)
 
-        if not self._description_before:
+        if self._description_after:
             self._add_program_description()
 
         # TODO: Not defined yet
