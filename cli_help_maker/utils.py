@@ -410,6 +410,48 @@ def make_paragraph(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
     )
 
 
+def make_list(elements: int = 2, numbered: bool = False) -> str:
+    """Creates a list of elements.
+
+    Args:
+        elements (int, optional):
+            Number of elements in the list. Defaults to 2.
+        numbered (bool, optional):
+            Whether the list is numbered or not. Defaults to False. 
+
+    Notes:
+        It can creates list as in markdown.
+        Each element would be a sentence. Helper function to create descriptions of
+        a program behavior, i.e.
+
+            Usage:   
+            pip install [options] <requirement specifier> [package-index-options] ...
+            pip install [options] -r <requirements file> [package-index-options] ...
+            pip install [options] [-e] <vcs project url> ...
+            pip install [options] [-e] <local project path> ...
+            pip install [options] <archive url/path> ...
+
+            Description:
+            Install packages from:
+            
+            - PyPI (and other indexes) using requirement specifiers.
+            - VCS project urls.
+            - Local project directories.
+            - Local or remote source archives.
+            
+            pip also supports installing from "requirements files", which provide
+            an easy way to specify a whole environment to be installed.
+    """
+    content = []
+    for i in range(elements):
+        if numbered:
+            content.append(f"{i + 1}. {make_sentence()}")
+        else:
+            content.append(f"- {make_sentence()}")
+
+    return "\n".join(content)
+
+
 def make_composed_word() -> str:
     """Generator of composed words for arguments, with
     made-up probabilities."""
