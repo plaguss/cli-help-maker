@@ -20,6 +20,7 @@ from .utils import (
     options_shortcut,
     section_pattern,
     usage_pattern,
+    make_list,
 )
 
 text_wrapper = textwrap.TextWrapper(width=78)
@@ -470,7 +471,6 @@ class HelpGenerator:
                 level = 0 if (i == 0 and not self._usage_section) else indent_level
                 add_prog(level, prog_name, False)
 
-    # TODO: Split the internal pieces in functions to simplify reading
     def _add_program(self, prog_name: str, options_in_section: bool = False) -> None:
         """Single line program generator.
 
@@ -562,7 +562,6 @@ class HelpGenerator:
 
                 end = start + len(o)
                 program += " " + o
-                # print("annotations OPT (start, end)", (start, end))
                 annotations.append((OPT, start, end))
 
         # 4) arguments
@@ -768,7 +767,7 @@ class HelpGenerator:
         """
         if len(elements) > 0:
             if len(elements[0]) == 0:
-                # To avoid writing a section header in the case that only one 
+                # To avoid writing a section header in the case that only one
                 # option is generated and has no content
                 return
 
@@ -866,9 +865,18 @@ class HelpGenerator:
         return element
 
     def _add_program_description(self) -> None:
-        """Add the program description (randomnly)"""
+        """Add the program description.
+
+        There is a probability of 1/5 of having a list of items in the description.
+        """
         desc = self._maybe_add_description()
         if len(desc) > 0:
+
+            if random.random() > 0.2:
+                desc += "\n" * 2 + make_list(
+                    elements=random.randint(2, 5), numbered=bool(random.randint(0, 1))
+                )
+
             if self._description_before:
                 msg = desc + "\n" * 2
             else:
@@ -885,7 +893,9 @@ class HelpGenerator:
         if self._description_before:
             self._add_program_description()
 
-        prog_name = capitalize(self._program_name(), probability=self._prob_name_capitalized)
+        prog_name = capitalize(
+            self._program_name(), probability=self._prob_name_capitalized
+        )
         self._add_programs(prog_name)
 
         if not self._description_before:
