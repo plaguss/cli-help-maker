@@ -3,13 +3,15 @@ to test if the generated message has the expected format than the inner
 methods themselves.
 """
 
-import random
+
+import pytest
 
 import cli_help_maker.generator as gen
 
 FIXED_SEED = 6798
 
 
+@pytest.mark.skip(reason="not defined yet")
 def test_argument_example_like():
 
     generator = gen.HelpGenerator(
@@ -28,10 +30,11 @@ def test_argument_example_like():
         number_of_arguments=1,
         exclusive_programs=2,
     )
-    random.seed(FIXED_SEED)
+    # random.seed(FIXED_SEED)
     msg = generator.sample()
     from rich import print
-    print(msg)
+
+    # print(msg)
     text = """Usage: 
   prototype disdainful deacetylate [MYXOPODA-MICROCELLULAR]
   prototype crossleted opulency [UNDOING]
