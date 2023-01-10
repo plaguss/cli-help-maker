@@ -37,10 +37,9 @@ arguments:
       p: [0.2, 0.8]
       values: [0, 1]
   commands_header:
-    dist: custom
+    dist: constant
     parameters:
-      p: [0.2, 0.8]
-      values: [0, 1]
+      value: 1
   commands_capitalized:
     dist: uniform-continuous
     parameters:
@@ -56,9 +55,12 @@ arguments:
     parameters:
       values: [0, 1]
   arguments_header:
-    dist: set
+    dist: constant
     parameters:
-      values: [0, 1]
+      value: 1
+    # dist: set
+    # parameters:
+    #   values: [0, 1]
   arguments_style:
     dist: custom
     parameters:
@@ -94,9 +96,12 @@ arguments:
     parameters:
       values: [0, 1]
   options_header:
-    dist: set
+    dist: constant
     parameters:
-      values: [0, 1]
+      value: 1
+    # dist: set
+    # parameters:
+    #   values: [0, 1]
   option_documented_prob:
     dist: uniform-continuous
     parameters:
@@ -117,10 +122,9 @@ arguments:
       min: 0
       max: 1
   options_shortcut_all_caps:
-    dist: uniform-continuous
+    dist: set
     parameters:
-      min: 0
-      max: 1
+      values: [0, 1]
   exclusive_group_optional_prob:
     dist: uniform-continuous
     parameters:
