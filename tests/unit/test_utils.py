@@ -336,3 +336,16 @@ def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected
         )
         == expected
     )
+
+
+@pytest.mark.parametrize(
+    "e, n, expected",
+    [
+        (0, False, ("-", 1)),
+        (1, False, ("-", 2)),
+        (2, False, ("-", 3)),
+        (2, True, ("-", 1)),
+    ],
+)
+def test_make_list(e, n, expected):
+    assert len(ut.make_list(elements=e, numbered=n).split(expected[0])) == expected[1]
