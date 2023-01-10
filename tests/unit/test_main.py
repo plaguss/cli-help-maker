@@ -3,10 +3,11 @@
 import pathlib
 
 import pytest
+
 from cli_help_maker import main
 
 root = pathlib.Path(__file__).resolve().parent.parent.parent
-dataset_path = root / "dataset.yaml"
+dataset_path = root / "tests" / "data" / "dataset.yaml"
 
 
 def test_read_config():
@@ -15,7 +16,7 @@ def test_read_config():
     assert len(conf.keys()) == 3
     keys = set(["version", "size", "arguments"])
     assert all([k in keys for k in conf.keys()])
-    assert len(conf["arguments"]) == 33
+    assert len(conf["arguments"]) == 34
     assert [
         callable(f) and f.__name__ == "<lambda>" for f in conf["arguments"].values()
     ]
@@ -61,4 +62,4 @@ def test_argument_generator():
     output = main.argument_generator(conf["size"], conf["arguments"])
     element = next(output)
     assert isinstance(element, dict)
-    assert len(element) == 32
+    assert len(element) == 33
