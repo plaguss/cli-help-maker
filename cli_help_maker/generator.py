@@ -412,10 +412,10 @@ class HelpGenerator:
         """Generates a list of arguments. The last one can be repeated
 
         Args:
-            total (int, optional): _description_. Defaults to 0.
+            total (int, optional): Number of arguments. Defaults to 0.
 
         Returns:
-            list[str]: _description_
+            list[str]: list of arguments for the program.
         """
         args = [
             self._argument(optional_probability=self._argument_optional_prob)
@@ -427,11 +427,6 @@ class HelpGenerator:
                 args[-1] = args[-1] + "..."
 
         return args
-
-    def _maybe_add_description(self) -> str:
-        if random.random() > (1 - self._program_description_prob):
-            return self._description()
-        return ""
 
     def _add_programs(self, prog_name: str) -> None:
         usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
@@ -863,7 +858,11 @@ class HelpGenerator:
 
         There is a probability of 1/5 of having a list of items in the description.
         """
-        desc = self._maybe_add_description()
+        if random.random() > (1 - self._program_description_prob):
+            desc = self._description()
+        else:
+            desc = ""
+
         if len(desc) > 0:
 
             if random.random() > 0.2:
