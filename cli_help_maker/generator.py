@@ -392,15 +392,13 @@ class HelpGenerator:
         # FIXME: Arguments capitalized exist?
         arg = make_argument(
             capitalized_prob=0,
-            # capitalized_prob=self._argument_capitalized_prob,
             style=self._arguments_style,
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
-        if arg in self._argument_names:
+        if arg in self._argument_names: # pragma: no cover
             arg = make_argument(
                 capitalized_prob=0,
-                # capitalized_prob=self._argument_capitalized_prob,
                 style=self._arguments_style,
             )
 
