@@ -1,4 +1,7 @@
 """This file contains tests of the different functions used in cli_help_maker.generator.HelpGenerator.
+
+Some tests may be better as unit tests, but others are interconected to other calls,
+so all the tests for the class are written here.
 """
 
 
@@ -191,3 +194,30 @@ def test_arguments(help_gen, values, expected, request):
     if values[1] is True:
         assert args[-1].endswith("...")
     assert len(args) == expected
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", ("program", 0, True, True), 1),
+        ("help_generator_default", ("program", 1, True, True), 2),
+        ("help_generator_default", ("program", 2, True, True), 3),
+        ("help_generator_default", ("program", 2, True, False), 2),
+        ("help_generator_default", ("program", 1, True, False), 1),
+    ],
+)
+def test_add_programs(help_gen, values, expected, request):
+    # Tests for the number of programs generated.
+    # Removes the trailing whitespaces and sets all the string to lower,
+    # Then splits by usage: , which should be the initial string in the
+    # message, and grabs the second piece (anything but the usage section),
+    # then splits by jump of lines and grabs from the first (which doesn't have
+    # anything) up to the last, to count the programs
+    help_hen = request.getfixturevalue(help_gen)
+    help_hen._exclusive_programs = values[1]
+    help_hen._options_section = values[2]
+    help_hen._usage_section = values[3]
+    help_hen._add_programs(values[0])
+    msg = help_hen.help_message.lstrip().lower().split("usage: ")[1].split("\n")[1:]
+    print("MSG", msg)
+    assert len(msg) == expected
