@@ -429,6 +429,15 @@ class HelpGenerator:
         return args
 
     def _add_programs(self, prog_name: str) -> None:
+        """Creates a series of programs (line by line).
+
+        The number of programs depends on the number written in
+        self._exclusive_programs.
+
+        Args:
+            prog_name (str): Name of the program, this field is repeated
+            for successive program examples.
+        """
         usage = usage_pattern(capitalized=self._usage_pattern_capitalized)
         self.help_message += usage
 
