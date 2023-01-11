@@ -188,7 +188,7 @@ class HelpGenerator:
         self.number_of_commands = number_of_commands
         self.number_of_arguments = number_of_arguments
         # If options_shortcut is True, write at least one option
-        if self._options_shortcut:
+        if self._options_shortcut:  # pragma: no cover
             number_of_options = max(1, number_of_options)
 
         self.number_of_options = number_of_options
@@ -248,7 +248,7 @@ class HelpGenerator:
             l, h = int(number), int(number)
         elif isinstance(number, list):
             if len(number) == 1:
-                l, h = int(number), int(number)
+                l, h = int(number[0]), int(number[0])
             else:
                 l, h = int(number[0]), int(number[1])
         else:
@@ -285,13 +285,18 @@ class HelpGenerator:
         A small subset of the arguments is generated here, those are allowed
         to behave differently across the same program.
 
+        the names are stored in a internal variable to get them back.
+
         Args:
-            options_arguments TODO: _description_.
+            options_arguments dict: Extra keyword arguments to be passed to make_options.
+                Not used currently, they are overwritten.
             in_section (bool): Whether the option is generated for a section or not.
+                For a section, every option is allowed, while if its in a program,
+                only one of the options will be selected.
             from_program (bool): See _options for the description.
 
         Returns:
-            str: _description_
+            str: optional argument.
         """
         # These are dependent of the point where they are generated:
         if in_section:
@@ -355,7 +360,7 @@ class HelpGenerator:
                 Defaults to False.
 
         Returns:
-            list[str]: _description_
+            list[str]: list of options to be added to the message.
         """
         kwargs = {
             "short_separator": random.choice(["=", " "]),
@@ -371,7 +376,7 @@ class HelpGenerator:
             o = self._option(kwargs, in_section, from_program)
             if len(o) > 0:
                 options.append(o)
-        # options = [self._option(kwargs, in_section, from_program) for _ in range(total)]
+
         return options
 
     def _argument(self, optional_probability: float = 0.5) -> str:
