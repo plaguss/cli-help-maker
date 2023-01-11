@@ -93,13 +93,13 @@ def test_number_of_options(help_generator_default):
     ],
 )
 def test_check_number_of_elements(help_gen, value, expected, request):
-    help_hen = request.getfixturevalue(help_gen)
+    help_gen = request.getfixturevalue(help_gen)
     if isinstance(value, str):
         with pytest.raises(ValueError):
-            help_hen._check_number_of_elements(value)
+            help_gen._check_number_of_elements(value)
 
     else:
-        opt = help_hen._check_number_of_elements(value)
+        opt = help_gen._check_number_of_elements(value)
         assert opt == expected
 
 
@@ -135,9 +135,9 @@ def test_commands(help_generator_default):
     ],
 )
 def test_option(help_gen, values, expected, request):
-    help_hen = request.getfixturevalue(help_gen)
+    help_gen = request.getfixturevalue(help_gen)
     random.seed(FIXED_SEED)
-    opt = help_hen._option(*values)
+    opt = help_gen._option(*values)
     assert opt == expected
 
 
@@ -150,8 +150,8 @@ def test_option(help_gen, values, expected, request):
     ],
 )
 def test_options(help_gen, values, expected, request):
-    help_hen = request.getfixturevalue(help_gen)
-    opt = help_hen._options(*values)
+    help_gen = request.getfixturevalue(help_gen)
+    opt = help_gen._options(*values)
     assert len(opt) == expected
 
 
@@ -163,9 +163,9 @@ def test_options(help_gen, values, expected, request):
     ],
 )
 def test_argument(help_gen, value, expected, request):
-    help_hen = request.getfixturevalue(help_gen)
+    help_gen = request.getfixturevalue(help_gen)
     random.seed(FIXED_SEED)
-    arg = help_hen._argument(value)
+    arg = help_gen._argument(value)
     assert arg == expected
 
 
@@ -188,9 +188,9 @@ def test_argument_repeated(help_generator_default):
     ],
 )
 def test_arguments(help_gen, values, expected, request):
-    help_hen = request.getfixturevalue(help_gen)
-    help_hen._argument_repeated = values[1]
-    args = help_hen._arguments(total=values[0])
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen._argument_repeated = values[1]
+    args = help_gen._arguments(total=values[0])
     if values[1] is True:
         assert args[-1].endswith("...")
     assert len(args) == expected
@@ -213,11 +213,42 @@ def test_add_programs(help_gen, values, expected, request):
     # message, and grabs the second piece (anything but the usage section),
     # then splits by jump of lines and grabs from the first (which doesn't have
     # anything) up to the last, to count the programs
-    help_hen = request.getfixturevalue(help_gen)
-    help_hen._exclusive_programs = values[1]
-    help_hen._options_section = values[2]
-    help_hen._usage_section = values[3]
-    help_hen._add_programs(values[0])
-    msg = help_hen.help_message.lstrip().lower().split("usage: ")[1].split("\n")[1:]
-    print("MSG", msg)
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen._exclusive_programs = values[1]
+    help_gen._options_section = values[2]
+    help_gen._usage_section = values[3]
+    help_gen._add_programs(values[0])
+    print("msg before", help_gen.help_message)
+    msg = help_gen.help_message.lstrip().lower().split("usage: ")[1].split("\n")[1:]
+    print("msg after strip", msg)
     assert len(msg) == expected
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", ("program", True, 0, False, False), "program [options]"),
+        ("help_generator_default", ("program", True, 1, False, False), "program impermanent [options] <chink>"),
+        ("help_generator_default", ("program", True, 10, False, False), 1),
+        ("help_generator_default", ("program", True, 1, True, False), "program commercialist [options] -- <dispart>"),
+        ("help_generator_default", ("program", True, 1, True, True), "program parasubstituted [options] [--] [<atoke-semiconvergent>]"),
+    ],
+)
+def test_add_program(help_gen, values, expected, request):
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen.number_of_commands = values[2]
+    help_gen.number_of_arguments = values[2]
+    help_gen.number_of_options = values[2]
+    help_gen._option_argument_separator = values[3]
+    help_gen._option_argument_required = values[4]
+    help_gen._add_program(values[0], options_in_section=values[1])
+    msg = help_gen.help_message
+    print("Help:")
+    print(msg)
+    if isinstance(expected, str):
+        assert msg == expected
+    else:
+        # The last parametrized test only checks the program has more than one
+        # line, by checking the split by \n. 10 as with this much content, for the 
+        # total width set, there must be more than one line
+        assert len(msg.split("\n")) > expected
