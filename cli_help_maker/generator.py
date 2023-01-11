@@ -544,13 +544,12 @@ class HelpGenerator:
 
         for i, o in enumerate(opts):
             # Only add the option if contained anything.
-            if len(o) > 0:
+            if len(o) > 0: # pragma: no cover
                 if not "|" in o:
                     # Check for the pipe operator to avoid possibly making
                     # the argument twice optional.
                     o = maybe_do_optional(o, probability=0.5)
 
-                # if i == 0:
                 if (i == 0) and (len(cmds) == 0):
                     start = self._current_length + len(program) + 1
                 else:
