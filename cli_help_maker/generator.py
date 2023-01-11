@@ -260,24 +260,14 @@ class HelpGenerator:
         return textwrap.fill(
             desc, width=self._total_width, initial_indent="", subsequent_indent=""
         )
-        # return text_wrapper.fill(desc)
 
-    def _program_name(self) -> str:
+    @staticmethod
+    def _program_name() -> str:
         """Returns a name for the app."""
         return get_word()
-        # return capitalize(get_word(), probability=self._prob_name_capitalized)
 
     def _commands(self, total: int = 0) -> list[str]:
-        """Returns commands for the app.
-
-        The commands are generated once, and
-
-        i.e. `git add`, `git commit`, ...
-
-        TODO: If a single argument is chosen, it will be written in the same
-        line as the Usage: , otherwise it is written in the next line, using the
-        indentation level chosen.
-        """
+        """Returns commands for the app. """
         commands = []
         while len(commands) < total:
             c = self._program_name()
