@@ -210,7 +210,6 @@ class HelpGenerator:
     @help_message.setter
     def help_message(self, msg: str) -> str:
         self._help_message = msg
-        # self._current_length += len(msg)
         self._current_length = len(self._help_message)
 
     @property
