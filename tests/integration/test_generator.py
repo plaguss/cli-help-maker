@@ -10,6 +10,7 @@ import random
 import pytest
 
 import cli_help_maker.generator as gen
+from cli_help_maker.utils import highlight_message
 
 FIXED_SEED = 6798
 
@@ -227,11 +228,27 @@ def test_add_programs(help_gen, values, expected, request):
 @pytest.mark.parametrize(
     "help_gen, values, expected",
     [
-        ("help_generator_default", ("program", True, 0, False, False), "program [options]"),
-        ("help_generator_default", ("program", True, 1, False, False), "program impermanent [options] <chink>"),
+        (
+            "help_generator_default",
+            ("program", True, 0, False, False),
+            "program [options]",
+        ),
+        (
+            "help_generator_default",
+            ("program", True, 1, False, False),
+            "program impermanent [options] <chink>",
+        ),
         ("help_generator_default", ("program", True, 10, False, False), 1),
-        ("help_generator_default", ("program", True, 1, True, False), "program commercialist [options] -- <dispart>"),
-        ("help_generator_default", ("program", True, 1, True, True), "program parasubstituted [options] [--] [<atoke-semiconvergent>]"),
+        (
+            "help_generator_default",
+            ("program", True, 1, True, False),
+            "program commercialist [options] -- <dispart>",
+        ),
+        (
+            "help_generator_default",
+            ("program", True, 1, True, True),
+            "program parasubstituted [options] [--] [<atoke-semiconvergent>]",
+        ),
     ],
 )
 def test_add_program(help_gen, values, expected, request):
@@ -249,6 +266,94 @@ def test_add_program(help_gen, values, expected, request):
         assert msg == expected
     else:
         # The last parametrized test only checks the program has more than one
-        # line, by checking the split by \n. 10 as with this much content, for the 
+        # line, by checking the split by \n. 10 as with this much content, for the
         # total width set, there must be more than one line
         assert len(msg.split("\n")) > expected
+
+
+labels = [[], [("CMD", 5, 10), ("ARG", 21, 45)]]
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", ("prog", True, 0, False, False), labels[0]),
+        ("help_generator_default", ("prog", True, 1, False, False), labels[1]),
+        # ("help_generator_default", ("program", True, 0, False, False), 0),
+        # ("help_generator_default", ("longname000000000000000000", True, 0, False, False), 0),
+    ],
+)
+def test_add_annotations(help_gen, values, expected, request):
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen.number_of_commands = values[2]
+    help_gen.number_of_arguments = values[2]
+    help_gen.number_of_options = values[2]
+    help_gen._option_argument_separator = values[3]
+    help_gen._option_argument_required = values[4]
+    help_gen._add_program(values[0], options_in_section=values[1])
+    msg = help_gen.help_message
+    ann = help_gen._annotations
+    highlight_message({"message": msg, "annotations": ann})
+    ann = 1
+    print("Help message:")
+    print(msg)
+    print("annotations:")
+    print(ann)
+    assert ann == expected
+
+
+msgs = [
+"Commands:\n    longcommandname0000000000000000\n\
+                          Columbo borasca euphonize. Cenoby bruisewort\n\
+                          pathogene. Ramesh cytolymph epocha temple\n\
+                          distaste. Diacritic effortful dubitable zincum\n\
+                          mandibuliform infatuat.\n",
+]
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", ([], True, "Commands", True, 0.0), ""),
+        (
+            "help_generator_default",
+            (["cmd1"], True, "Commands", True, 0.0),
+            "Commands:\n    cmd1\n",
+        ),
+        (
+            "help_generator_default",
+            (["cmd1", "cmd2", "cmd3"], True, "Commands", True, 0.0),
+            "Commands:\n    cmd1\n    cmd2\n    cmd3\n",
+        ),
+        ("help_generator_default", ([""], True, "Commands", True, 0.0), ""),
+        (
+            "help_generator_default",
+            (["longcommandname0000000000000000"], True, "Commands", True, 1.0),
+            msgs[0],
+        ),
+        ("help_generator_default", (["", "", ""], True, "Commands", True, 0.0), ""),
+        (
+            "help_generator_default",
+            (["arg1"], True, "arguments", True, 0.0),
+            "Arguments:\n    arg1\n",
+        ),
+        (
+            "help_generator_default",
+            (["opt1"], True, "options", True, 0.0),
+            "Options:\n    opt1\n",
+        ),
+    ],
+)
+def test_add_section(help_gen, values, expected, request):
+    elements, has_header, section_name, capitalized, documented_prob = values
+    help_gen = request.getfixturevalue(help_gen)
+    # help_gen.number_of_commands = values[2]
+    # help_gen.number_of_arguments = values[2]
+    # help_gen.number_of_options = values[2]
+    # help_gen._option_argument_separator = values[3]
+    # help_gen._option_argument_required = values[4]
+
+    help_gen._add_section(
+        elements, has_header, section_name, capitalized, documented_prob
+    )
+    msg = help_gen.help_message
+    assert msg == expected
