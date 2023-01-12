@@ -754,7 +754,7 @@ class HelpGenerator:
         the elements.
 
         Args:
-            elements (list[str]) Contains the arguments or options to add.
+            elements (list[str]) Contains the commands, arguments or options to add.
             has_header (bool) Whether to insert a header or not.
             section_name (str) 'arguments' or 'options' by default. TBD, not prepared
                 to add random named section.
@@ -783,7 +783,7 @@ class HelpGenerator:
 
             for e, length in zip(elements, elem_lengths):
                 # FIXME: This should be controlled in the moment the string is created
-                if len(e) == 0:
+                if len(e) == 0:  # pragma: no cover
                     continue
                 elem = indent(e, " " * self._indent_spaces)
 
@@ -815,15 +815,16 @@ class HelpGenerator:
     ) -> str:
         """Adds documentation to an alement.
 
-        Can be used in arguments or options.
+        Can be used in commands, arguments or options.
 
         Args:
-            element (str): An argument or an option.
+            element (str): A command, argument or an option.
             longest_elem (int): The number of characters of the longest element.
             length (int): The number of characters of the current element.
+            probability (float): Probability of adding docs to the element. 
 
         Returns:
-            str: _description_
+            str: Element with the description attached.
         """
         if random.random() > (1 - probability) and len(element) > 0:
             next_line = False
@@ -878,6 +879,7 @@ class HelpGenerator:
                     elements=random.randint(2, 5), numbered=bool(random.randint(0, 1))
                 ) + "\n"
 
+            msg = ""
             if self._description_before:
                 msg = desc + "\n" * 2
             if self._description_after:
