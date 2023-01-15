@@ -14,13 +14,13 @@ from .utils import (
     do_optional,
     get_word,
     make_argument,
+    make_list,
     make_option,
     make_paragraph,
     maybe_do_optional,
     options_shortcut,
     section_pattern,
     usage_pattern,
-    make_list,
 )
 
 text_wrapper = textwrap.TextWrapper(width=78)
@@ -267,7 +267,7 @@ class HelpGenerator:
         return get_word()
 
     def _commands(self, total: int = 0) -> list[str]:
-        """Returns commands for the app. """
+        """Returns commands for the app."""
         commands = []
         while len(commands) < total:
             c = self._program_name()
@@ -396,7 +396,7 @@ class HelpGenerator:
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
-        if arg in self._argument_names: # pragma: no cover
+        if arg in self._argument_names:  # pragma: no cover
             arg = make_argument(
                 capitalized_prob=0,
                 style=self._arguments_style,
@@ -544,7 +544,7 @@ class HelpGenerator:
 
         for i, o in enumerate(opts):
             # Only add the option if contained anything.
-            if len(o) > 0: # pragma: no cover
+            if len(o) > 0:  # pragma: no cover
                 if not "|" in o:
                     # Check for the pipe operator to avoid possibly making
                     # the argument twice optional.
@@ -603,7 +603,7 @@ class HelpGenerator:
                 program if the total_width wasn't exceeded.
             annotations (list[tuple[str, int, int]]): List with 3 element tuple that
                 represents the label, the start and end of the label in the program.
-            initial_length (int)
+            initial_length (int): Initial length of the program name as a string.
         """
         # Compare only the length to see if they are the same
         if len(program) == len(filled_program):
@@ -611,7 +611,6 @@ class HelpGenerator:
                 self._annotations.append((label, start, end))
                 for label, start, end in annotations
             ]
-            # TODO: This is under testing
             return
 
         blocks = list(
@@ -619,126 +618,174 @@ class HelpGenerator:
         )[:-1]
 
         # FIXME: los incrementos deben acumularse a partir del tercer bloque
+        # Los saltos de línea se tienen en cuenta??
 
         remain = 0  # Variable to avoid checking again blocks
         inc = 0
-        # print("blocks", blocks)
+        # TODO: New variable to control the positions of the blocks,
+        # it is used when in a given line we have to access the following block
+        j = 0  
         for label, start, end in annotations:
             for i, b in enumerate(blocks[remain:]):
+                # print("remaining blocks:", len(blocks[remain:]))
                 if b.a == b.b == 0:
+                    # Corresponds to the first line of a program, doesn't need adjustment
                     if end <= (b.size + initial_length):
                         # Example: (start 9, end 15) Match(a=0, b=0, size=78)
-                        # print(
-                        #     "first block",
-                        #     (start, end),
-                        #     b,
-                        #     program[(start - initial_length) : (end - initial_length)],
-                        # )
+                        print(
+                            "first block",
+                            (start, end),
+                            b,
+                            program[(start - initial_length) : (end - initial_length)],
+                        )
                         self._annotations.append((label, start, end))
 
                     elif (start <= (b.size + initial_length)) and (
                         end >= (b.size + initial_length)
                     ):
+                        # Starts in the first line and continues to the next (an
+                        # element which spans for more than one line)
+                        # Adjusts for the indentation added, and grabs the next block
                         # Example: (start 77, end 110) Match(a=0, b=0, size=78)
-                        b = blocks[i + 1]
-                        inc += b.b - b.a
-                        # print(
-                        #     "first block and second",
-                        #     (start, end),
-                        #     (start, end + inc),
-                        #     b,
-                        #     filled_program[
-                        #         (start - initial_length) : (end + inc - initial_length)
-                        #     ],
-                        # )
+                        print("current_block, next obtained: ", b, blocks[j + 1])
+                        b = blocks[j + 1]
+                        inc = b.b - b.a  # - 1  # Add one for the \n ?
+                        # b = blocks[i + 1]
+                        # inc += b.b - b.a
+                        print(
+                            "first block and second",
+                            (start, end),
+                            (start, end + inc),
+                            b,
+                            filled_program[
+                                (start - initial_length) : (end + inc - initial_length)
+                            ],
+                        )
                         self._annotations.append((label, start, end + inc))
                         remain += 1
+                        j += 1
 
                     else:
                         # This one is the first case from the next block.
+                        # Behaves as the previous block, but increments both the start
+                        # and the end of the span, as this one pertains completely
+                        # to a single line
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        b = blocks[i + 1]
-                        inc += b.b - b.a
-                        # print(
-                        #     "next block",
-                        #     (start, end),
-                        #     (start + inc, end + inc),
-                        #     filled_program[
-                        #         (start + inc - initial_length) : (
-                        #             end + inc - initial_length
-                        #         )
-                        #     ],
-                        # )
+                        print("current_block, next obtained: ", b, blocks[j + 1])
+                        b = blocks[j + 1]
+                        inc = b.b - b.a
+                        # b = blocks[i + 1]
+                        # inc += b.b - b.a
+                        print(
+                            "first next block",
+                            (start, end),
+                            (start + inc, end + inc),
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
+                        j += 1
 
                     break
 
                 else:
-                    # if (start > b.a) and (end <= (b.a + b.size)):
+                    # Second line plus.
                     if (start > b.a + initial_length) and (
                         end <= (b.a + b.size + initial_length)
                     ):
                         # if (start > b.a) and (end <= (b.b + b.size)):
                         # General case
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        # print(
-                        #     "second plus block",
-                        #     (start, end),
-                        #     (start + inc, end + inc),
-                        #     b,
-                        #     filled_program[
-                        #         (start + inc - initial_length) : (
-                        #             end + inc - initial_length
-                        #         )
-                        #     ],
-                        # )
+                        print(
+                            "second plus block",
+                            (start, end),
+                            (start + inc, end + inc),
+                            b,
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         self._annotations.append((label, start + inc, end + inc))
 
+                    # FIXME: DEBE APLICAR CADA Match A LA POSICIÓN CORRESPONDIENTE?
+                    # ACTUALMENTE: 
+                    # Bien: (240, 253) (266, 279) Match(a=194, b=220, size=62)
+                    # Mal: (254, 277) (280, 312) Match(a=68, b=76, size=61)
                     # FIXME: The two following blocks have problems
                     # Sometimes this block needs one more position on the annotation
                     # and the next one needs one less, but cannot find the
                     # reason to do this
+                    # FIXME: This is the new
+                    # elif (start > b.a + initial_length) and (
+                    #     end > (b.a + b.size + initial_length)
+                    # ):
+                    # FIXME: This is the actual one
+                    # elif (start > b.a + initial_length) and (
                     elif (start <= b.a + b.size + initial_length) and (
-                        end >= (b.a + b.size + initial_length)
+                        end > (b.a + b.size + initial_length)
                     ):
-                        # Aquí coge el incremento del siguiente bloque
-                        b = blocks[i + 1]
+                        # FIXME: Ocurre lo siguiente en algún caso
+                        # current_block, next obtained:  Match(a=194, b=220, size=62) Match(a=68, b=76, size=61)
+                        # Starts in a line and continues to the next
+                        print("current_block, next obtained: ", b, blocks[j + 1])
+                        # NEW: The blocks are not properly taken
+                        # b = blocks[i + 1]
+                        # old_inc = inc
+                        # inc += b.b - b.a  # + 1
                         old_inc = inc
-                        inc += b.b - b.a  # + 1
-                        # print(
-                        #     "second plus between blocks",
-                        #     (start, end),
-                        #     (start + old_inc, end + inc),
-                        #     b,
-                        #     filled_program[
-                        #         (start + old_inc - initial_length) : (
-                        #             end + inc - initial_length
-                        #         )
-                        #     ],
-                        #     program[(start - initial_length) : (end - initial_length)],
-                        # )
+                        b = blocks[j + 1]
+                        inc = b.b - b.a  # - 1  # Add one for the \n ?
+                        # TODO: NEW
+                        # Once entered in this block, we add 1 to the increment, due to the \n
+                        # of a new line?
+                        # inc += 1
+                        print(
+                            "second plus between blocks",
+                            (start, end),
+                            (start + old_inc, end + inc),
+                            b,
+                            f"'{filled_program[(start + old_inc - initial_length) : (end + inc - initial_length)]}'",
+                            f"'{program[(start - initial_length) : (end - initial_length)]}'",
+                        )
                         self._annotations.append((label, start + old_inc, end + inc))
                         remain += 1
+                        j += 1
+
 
                     else:
                         # elif (start > b.a + initial_length) and (end > (b.a + b.size + initial_length)):
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        b = blocks[i + 1]
-                        inc += b.b - b.a  # - 1  # Add one for the \n ?
-                        # print(
-                        #     "next block from second",
-                        #     (start, end),
-                        #     (start + inc, end + inc),
-                        #     b,
-                        #     filled_program[
-                        #         (start + inc - initial_length) : (
-                        #             end + inc - initial_length
-                        #         )
-                        #     ],
-                        # )
+                        if (j + 1) >= len(blocks):  # We cant go to the next block here
+                            idx = j
+                        else:
+                            idx = j + 1
+                        print("current_block, next obtained: ", b, blocks[idx])
+
+                        b = blocks[idx]
+                        inc = b.b - b.a  # - 1  # Add one for the \n ?
+                        # b = blocks[i + 1]
+                        # inc += b.b - b.a  # - 1  # Add one for the \n ?
+                        # inc -= 1
+                        print(
+                            "following block",
+                            (start, end),
+                            (start + inc, end + inc),
+                            b,
+                            filled_program[
+                                (start + inc - initial_length) : (
+                                    end + inc - initial_length
+                                )
+                            ],
+                        )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
+                        j += 1
 
                     break
 
@@ -821,7 +868,7 @@ class HelpGenerator:
             element (str): A command, argument or an option.
             longest_elem (int): The number of characters of the longest element.
             length (int): The number of characters of the current element.
-            probability (float): Probability of adding docs to the element. 
+            probability (float): Probability of adding docs to the element.
 
         Returns:
             str: Element with the description attached.
@@ -875,9 +922,14 @@ class HelpGenerator:
         if len(desc) > 0:
 
             if random.random() > 0.2:
-                desc += "\n" * 2 + make_list(
-                    elements=random.randint(2, 5), numbered=bool(random.randint(0, 1))
-                ) + "\n"
+                desc += (
+                    "\n" * 2
+                    + make_list(
+                        elements=random.randint(2, 5),
+                        numbered=bool(random.randint(0, 1)),
+                    )
+                    + "\n"
+                )
 
             msg = ""
             if self._description_before:
@@ -888,10 +940,10 @@ class HelpGenerator:
             self.help_message += msg
 
     def sample(self) -> str:
-        """Generates a sample help message
+        """Generates a sample help message.
 
         Returns:
-            str: _description_
+            str: random help message.
         """
         if self._description_before:
             self._add_program_description()
@@ -904,51 +956,65 @@ class HelpGenerator:
         if self._description_after:
             self._add_program_description()
 
-        # TODO: Not defined yet
-        if self._commands_section:
-            # If the commands were created when calling _add_programs,
-            # get them from the list of names. The same applies to the options and arguments.
+        def add_section(
+            section_name,
+            elements,
+            number_of_elements,
+            elements_header,
+            elements_capitalized,
+            elements_doc_prob,
+        ): # pragma: no cover
+            if section_name == "commands":
+                f = self._commands
+                kwargs = {"total": number_of_elements}
+            elif section_name == "arguments":
+                f = self._arguments
+                kwargs = {"total": number_of_elements}
+            else:
+                f = self._options
+                kwargs = {"total": number_of_elements, "in_section": True}
+
             self.help_message += "\n"
 
-            if self._command_names:
-                commands = self._command_names
-            else:
-                commands = self._commands(total=self.number_of_commands)
+            if not elements:  # If no element was previously defined, do it here
+                elements = f(**kwargs)
 
             self._add_section(
-                elements=commands,
-                has_header=self._commands_header,
-                section_name="commands",
-                capitalized=self._commands_capitalized,
-                documented_prob=self._commands_documented_prob,
+                elements=elements,
+                has_header=elements_header,
+                section_name=section_name,
+                capitalized=elements_capitalized,
+                documented_prob=elements_doc_prob,
+            )
+
+        if self._commands_section:
+            add_section(
+                "commands",
+                self._command_names,
+                self.number_of_commands,
+                self._commands_header,
+                self._commands_capitalized,
+                self._commands_documented_prob,
             )
 
         if self._arguments_section:
-            self.help_message += "\n"
-            if self._argument_names:
-                arguments = self._argument_names
-            else:
-                arguments = self._arguments(total=self.number_of_arguments)
-            self._add_section(
-                elements=arguments,
-                has_header=self._arguments_header,
-                section_name="arguments",
-                capitalized=self._arguments_pattern_capitalized,
-                documented_prob=self._argument_documented_prob,
+            add_section(
+                "arguments",
+                self._argument_names,
+                self.number_of_arguments,
+                self._arguments_header,
+                self._arguments_pattern_capitalized,
+                self._argument_documented_prob,
             )
 
         if self._options_section:
-            self.help_message += "\n"
-            if self._option_names:
-                options = self._option_names
-            else:
-                options = self._options(total=self.number_of_options, in_section=True)
-            self._add_section(
-                elements=options,
-                has_header=self._options_header,
-                section_name="options",
-                capitalized=self._options_pattern_capitalized,
-                documented_prob=self._option_documented_prob,
+            add_section(
+                "options",
+                self._option_names,
+                self.number_of_options,
+                self._options_header,
+                self._options_pattern_capitalized,
+                self._option_documented_prob,
             )
 
         return self.help_message

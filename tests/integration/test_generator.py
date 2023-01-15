@@ -271,20 +271,129 @@ def test_add_program(help_gen, values, expected, request):
         assert len(msg.split("\n")) > expected
 
 
-labels = [[], [("CMD", 5, 10), ("ARG", 21, 45)]]
+# fmt: off
+labels = [
+    [],
+    [('CMD', 5, 16), ('OPT', 17, 21), ('ARG', 22, 33)],
+    [('CMD', 5, 16), ('CMD', 17, 31), ('OPT', 32, 36), ('OPT', 37, 41), ('ARG', 42, 62), ('ARG', 63, 75)],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('OPT', 49, 51), ('OPT', 52, 54), ('OPT', 55, 59),
+        ('ARG', 60, 70), ('ARG', 79, 95), ('ARG', 96, 106)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('OPT', 60, 62), ('OPT', 63, 65),
+        ('OPT', 66, 70), ('OPT', 71, 75), ('ARG', 84, 93), ('ARG', 94, 106), ('ARG', 107, 118), ('ARG', 119, 130)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), ('OPT', 69, 73), 
+        ('OPT', 74, 78), ('OPT', 87, 91), ('OPT', 92, 96), ('OPT', 97, 101), ('ARG', 102, 124), ('ARG', 125, 138), 
+        ('ARG', 139, 150), ('ARG', 159, 168), ('ARG', 169, 180)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), ('CMD', 77, 90), 
+        ('OPT', 91, 95), ('OPT', 96, 98), ('OPT', 99, 103), ('OPT', 104, 106), ('OPT', 107, 111), ('OPT', 112, 160), 
+        ('ARG', 161, 170), ('ARG', 171, 188), ('ARG', 189, 202), ('ARG', 203, 213), ('ARG', 222, 239), ('ARG', 240, 261)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), ('CMD', 77, 90), 
+        ('CMD', 91, 102), ('OPT', 103, 107), ('OPT', 108, 159), ('OPT', 160, 176), ('OPT', 177, 179), 
+        ('OPT', 180, 182), ('OPT', 183, 252), ('OPT', 253, 268), ('ARG', 277, 297), ('ARG', 298, 323), 
+        ('ARG', 324, 338), ('ARG', 347, 371), ('ARG', 372, 382), ('ARG', 383, 391), ('ARG', 392, 431)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), ('CMD', 77, 90), 
+        ('CMD', 91, 102), ('CMD', 103, 113), ('OPT', 114, 116), ('OPT', 117, 166), ('OPT', 167, 185), 
+        ('OPT', 186, 190), ('OPT', 191, 195), ('OPT', 196, 265), ('OPT', 266, 279), ('OPT', 280, 312), 
+        ('ARG', 313, 334), ('ARG', 335, 359), ('ARG', 368, 391), ('ARG', 392, 412), ('ARG', 413, 438), 
+        ('ARG', 447, 470), ('ARG', 471, 496), ('ARG', 497, 508)
+    ],  # Mal
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), ('CMD', 77, 90), 
+        ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('OPT', 128, 178), ('OPT', 179, 199), 
+        ('OPT', 200, 218), ('OPT', 227, 231), ('OPT', 232, 236), ('OPT', 237, 295), ('OPT', 304, 319), 
+        ('OPT', 320, 343), ('OPT', 344, 361), ('ARG', 362, 373), ('ARG', 382, 397), ('ARG', 398, 421), 
+        ('ARG', 422, 463), ('ARG', 464, 477), ('ARG', 478, 490), ('ARG', 491, 528), ('ARG', 529, 540), 
+        ('ARG', 541, 566)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
+        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
+        ('OPT', 134, 184), ('OPT', 185, 203), ('OPT', 204, 220), ('OPT', 229, 233), ('OPT', 234, 238), 
+        ('OPT', 239, 297), ('OPT', 306, 319), ('OPT', 320, 345), ('OPT', 346, 363), ('OPT', 364, 366), 
+        ('ARG', 375, 389), ('ARG', 390, 404), ('ARG', 405, 416), ('ARG', 417, 440), ('ARG', 449, 463), 
+        ('ARG', 464, 484), ('ARG', 485, 500), ('ARG', 501, 531), ('ARG', 532, 554), ('ARG', 555, 572)
+    ],
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
+        ('CMD', 85, 98), ('CMD', 115, 126), ('CMD', 143, 153), ('CMD', 170, 183), ('CMD', 200, 205), 
+        ('CMD', 222, 233), ('CMD', 250, 263), ('CMD', 287, 289)
+    ],  # Mal, solo captura algunos comandos
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
+        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
+        ('CMD', 134, 145), ('CMD', 154, 167), ('CMD', 168, 172), ('CMD', 173, 181), ('CMD', 182, 195), 
+        ('CMD', 196, 204), ('CMD', 205, 216), ('CMD', 225, 237), ('CMD', 238, 251), ('CMD', 252, 259), 
+        ('OPT', 260, 272), ('OPT', 273, 275), ('OPT', 276, 311), ('OPT', 312, 336), ('OPT', 337, 368), 
+        ('OPT', 377, 381), ('OPT', 382, 398), ('OPT', 399, 412), ('OPT', 413, 415), ('OPT', 416, 423), 
+        ('OPT', 424, 457), ('OPT', 458, 476), ('OPT', 477, 481), ('OPT', 482, 486), ('OPT', 487, 491), 
+        ('OPT', 492, 494), ('OPT', 495, 537), ('OPT', 538, 559), ('OPT', 560, 579), ('OPT', 588, 597), 
+        ('ARG', 598, 618), ('ARG', 619, 640), ('ARG', 641, 652), ('ARG', 661, 670), ('ARG', 671, 684), 
+        ('ARG', 685, 714), ('ARG', 715, 726), ('ARG', 735, 755), ('ARG', 756, 781), ('ARG', 782, 796), 
+        ('ARG', 805, 817), ('ARG', 818, 835), ('ARG', 836, 856), ('ARG', 857, 889), ('ARG', 890, 904), 
+        ('ARG', 905, 933), ('ARG', 934, 944), ('ARG', 953, 974), ('ARG', 975, 988), ('ARG', 989, 1001)
+    ], # Mal, solo por uno
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
+        ('CMD', 85, 98), ('CMD', 115, 126), ('CMD', 143, 153), ('CMD', 170, 183), ('CMD', 200, 205), 
+        ('CMD', 222, 233), ('CMD', 250, 263), ('CMD', 280, 284), ('CMD', 301, 309), ('CMD', 326, 339), 
+        ('CMD', 356, 364), ('CMD', 381, 392), ('CMD', 409, 421), ('CMD', 438, 451), ('CMD', 468, 475), 
+        ('CMD', 492, 505), ('CMD', 522, 530), ('CMD', 547, 557), ('CMD', 574, 582), ('CMD', 599, 608), 
+        ('CMD', 625, 633)
+    ],  # mal, solo captura algunos comandos
+    [
+        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
+        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
+        ('CMD', 134, 145), ('CMD', 154, 167), ('CMD', 168, 172), ('CMD', 173, 181), ('CMD', 182, 195), 
+        ('CMD', 196, 204), ('CMD', 205, 216), ('CMD', 225, 237), ('CMD', 238, 251), ('CMD', 252, 259), 
+        ('CMD', 260, 273), ('CMD', 274, 282), ('CMD', 283, 293), ('CMD', 302, 310), ('CMD', 311, 320), 
+        ('CMD', 321, 329), ('CMD', 330, 341), ('CMD', 342, 355), ('CMD', 356, 362), ('CMD', 371, 386), 
+        ('CMD', 395, 402), ('CMD', 411, 421), ('CMD', 430, 437), ('CMD', 446, 453), ('CMD', 462, 472), 
+        ('CMD', 481, 490), ('CMD', 499, 514), ('CMD', 523, 536), ('CMD', 545, 555), ('CMD', 564, 575), 
+        ('CMD', 584, 594), ('CMD', 603, 615), ('CMD', 624, 629), ('CMD', 638, 648), ('CMD', 657, 666), 
+        ('CMD', 675, 691), ('CMD', 700, 720), ('CMD', 729, 744), ('CMD', 753, 763), ('CMD', 772, 784), 
+        ('OPT', 793, 811), ('OPT', 820, 833), ('OPT', 842, 879), ('OPT', 888, 906), ('OPT', 915, 930), 
+        ('OPT', 939, 962), ('OPT', 971, 990)
+    ]  # mal, captura algunos comandos y argumentos
+]
+# fmt: on
 
-
+# FIXME: A bug places the annotations separated by a single position in most cases
+# (only when the program has more than 3 lines), and other times even full
 @pytest.mark.parametrize(
     "help_gen, values, expected",
     [
         ("help_generator_default", ("prog", True, 0, False, False), labels[0]),
         ("help_generator_default", ("prog", True, 1, False, False), labels[1]),
-        # ("help_generator_default", ("program", True, 0, False, False), 0),
-        # ("help_generator_default", ("longname000000000000000000", True, 0, False, False), 0),
+        ("help_generator_default", ("prog", True, 2, False, False), labels[2]),
+        ("help_generator_default", ("prog", True, 3, False, False), labels[3]),
+        ("help_generator_default", ("prog", True, 4, False, False), labels[4]),
+        ("help_generator_default", ("prog", True, 5, False, False), labels[5]),
+        ("help_generator_default", ("prog", True, 6, False, False), labels[6]),
+        ("help_generator_default", ("prog", True, 7, False, False), labels[7]),
+        ("help_generator_default", ("prog", True, 8, False, False), labels[8]),  # mal
+        ("help_generator_default", ("prog", True, 9, False, False), labels[9]),
+        ("help_generator_default", ("prog", True, 10, False, False), labels[10]),
+
+        ("help_generator_default", ("prog", True, 15, False, False), labels[11]),  # mal, Due to misuse of remain += 1?
+        ("help_generator_default", ("prog", True, 20, False, False), labels[12]),  # mal
+        ("help_generator_default", ("prog", True, 30, False, False), labels[13]),  # mal
+        ("help_generator_default", ("prog", True, 50, False, False), labels[14]),
     ],
 )
 def test_add_annotations(help_gen, values, expected, request):
+    random.seed(FIXED_SEED)
     help_gen = request.getfixturevalue(help_gen)
+    help_gen._options_shortcut = False
     help_gen.number_of_commands = values[2]
     help_gen.number_of_arguments = values[2]
     help_gen.number_of_options = values[2]
@@ -293,22 +402,25 @@ def test_add_annotations(help_gen, values, expected, request):
     help_gen._add_program(values[0], options_in_section=values[1])
     msg = help_gen.help_message
     ann = help_gen._annotations
-    highlight_message({"message": msg, "annotations": ann})
-    ann = 1
-    print("Help message:")
-    print(msg)
+    # ann = 1
     print("annotations:")
     print(ann)
+    print("highlight:")
+    highlight_message({"message": msg, "annotations": ann})
     assert ann == expected
+    if len(ann) > 0:
+        assert len(msg) >= ann[-1][-1]
 
 
 msgs = [
-"Commands:\n    longcommandname0000000000000000\n\
-                          Columbo borasca euphonize. Cenoby bruisewort\n\
-                          pathogene. Ramesh cytolymph epocha temple\n\
-                          distaste. Diacritic effortful dubitable zincum\n\
-                          mandibuliform infatuat.\n",
+    "Commands:\n    longcommandname0000000000000000\n\
+                          Pterobranchia deacetylate spiritland. Tara\n\
+                          myxopoda microcellular ordinary napoleonite\n\
+                          undersurface keratomycosis. Crossleted sturnoid\n\
+                          jactitate opulency misestimate unpredisposed\n\
+                          ruffle psychophysicist hymenic genitoria.\n"
 ]
+
 
 @pytest.mark.parametrize(
     "help_gen, values, expected",
@@ -344,6 +456,7 @@ msgs = [
     ],
 )
 def test_add_section(help_gen, values, expected, request):
+    random.seed(FIXED_SEED)
     elements, has_header, section_name, capitalized, documented_prob = values
     help_gen = request.getfixturevalue(help_gen)
     # help_gen.number_of_commands = values[2]
@@ -357,3 +470,83 @@ def test_add_section(help_gen, values, expected, request):
     )
     msg = help_gen.help_message
     assert msg == expected
+
+
+docs = [
+    "name  Pterobranchia deacetylate spiritland. Tara myxopoda microcellular\n\
+ ordinary napoleonite undersurface keratomycosis. Crossleted sturnoid\n\
+ jactitate opulency misestimate unpredisposed ruffle psychophysicist\n\
+ hymenic genitoria."
+]
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", ("name", 1, 1, 0.0), "name"),
+        ("help_generator_default", ("name", 1, 1, 1.0), docs[0]),
+    ],
+)
+def test_add_documentation(help_gen, values, expected, request):
+    random.seed(FIXED_SEED)
+    elements, longest_elem, length, probability = values
+    help_gen = request.getfixturevalue(help_gen)
+    elem = help_gen._add_documentation(elements, longest_elem, length, probability)
+    assert elem == expected
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", (0.0, False, False), 0),
+        ("help_generator_default", (0.0, True, True), 0),
+        ("help_generator_default", (1.0, False, False), 0),
+        ("help_generator_default", (1.0, True, False), 0),
+        ("help_generator_default", (1.0, False, True), 0),
+        ("help_generator_default", (1.0, True, True), 0),
+    ],
+)
+def test_add_program_description(help_gen, values, expected, request):
+    desc_prob, desc_before, desc_after = values
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen._program_description_prob = desc_prob
+    help_gen._description_before = desc_before
+    help_gen._description_after = desc_after
+    help_gen._add_program_description()
+    elem = help_gen.help_message
+    if (desc_prob > 0) and (desc_before is True or desc_after is True):
+        assert len(elem) > expected
+    else:
+        assert len(elem) == expected
+
+
+@pytest.mark.parametrize(
+    "help_gen, values, expected",
+    [
+        ("help_generator_default", (False, False, False), "commands:"),
+        ("help_generator_default", (True, False, False), "commands:"),
+        ("help_generator_default", (False, True, False), "arguments:"),
+        ("help_generator_default", (False, False, True), "options:"),
+    ],
+)
+def test_sample(help_gen, values, expected, request):
+    commands_section, arguments_section, options_section = values
+    help_gen = request.getfixturevalue(help_gen)
+    help_gen._commands_section = commands_section
+    help_gen._commands_header = commands_section
+    help_gen._arguments_section = arguments_section
+    help_gen._arguments_header = arguments_section
+    help_gen._options_section = options_section
+    help_gen._options_header = options_section
+    msg = help_gen.sample().lower()
+    if any(values):
+        assert expected in msg
+    else:
+        assert expected not in msg
+
+
+def test_annotations(help_generator_default):
+    ann = help_generator_default.annotations
+    assert isinstance(ann, dict)
+    keys = ["message", "annotations"]
+    assert all([k in keys for k in ann.keys()])
