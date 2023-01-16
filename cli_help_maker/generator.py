@@ -613,18 +613,22 @@ class HelpGenerator:
             ]
             return
 
+        print("original annotations", annotations)
+        # TODO: Check what autojunk does
         blocks = list(
-            difflib.SequenceMatcher(a=program, b=filled_program).get_matching_blocks()
+            difflib.SequenceMatcher(a=program, b=filled_program, autojunk=False).get_matching_blocks()
         )[:-1]
-
-        # FIXME: los incrementos deben acumularse a partir del tercer bloque
-        # Los saltos de línea se tienen en cuenta??
+        print("BLOCKS", blocks)
+        print("original")
+        print(program)
+        print("filled")
+        print(filled_program)
 
         remain = 0  # Variable to avoid checking again blocks
         inc = 0
         # TODO: New variable to control the positions of the blocks,
         # it is used when in a given line we have to access the following block
-        j = 0  
+        j = 0
         for label, start, end in annotations:
             for i, b in enumerate(blocks[remain:]):
                 # print("remaining blocks:", len(blocks[remain:]))
@@ -788,6 +792,9 @@ class HelpGenerator:
                         j += 1
 
                     break
+
+        # if len(annotations) != len(self._annotations):
+        #     raise ValueError("There were missing annotations, the SequenceMatcher failed and must be reviewed.")
 
     def _add_section(
         self,
