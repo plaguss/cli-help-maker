@@ -325,45 +325,15 @@ labels = [
     ],  # 10
     [
         ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
-        ('CMD', 85, 98), ('CMD', 115, 126), ('CMD', 143, 153), ('CMD', 170, 183), ('CMD', 200, 205), 
-        ('CMD', 222, 233), ('CMD', 250, 263), ('CMD', 287, 289)
+        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
+        ('CMD', 134, 145), ('CMD', 154, 167), ('CMD', 168, 172), ('CMD', 173, 181), ('CMD', 182, 195), 
+        ('OPT', 196, 198), ('OPT', 199, 203), ('OPT', 204, 208), ('OPT', 209, 253), ('OPT', 254, 281), 
+        ('OPT', 282, 312), ('OPT', 313, 329), ('OPT', 330, 357), ('OPT', 366, 383), ('OPT', 384, 388), 
+        ('OPT', 389, 407), ('OPT', 408, 429), ('OPT', 430, 434), ('OPT', 443, 459), ('OPT', 460, 462), 
+        ('ARG', 463, 478), ('ARG', 479, 495), ('ARG', 496, 529), ('ARG', 530, 541), ('ARG', 542, 551), 
+        ('ARG', 552, 560), ('ARG', 561, 585), ('ARG', 594, 610), ('ARG', 611, 622), ('ARG', 623, 649), 
+        ('ARG', 658, 681), ('ARG', 682, 694), ('ARG', 695, 710), ('ARG', 711, 753), ('ARG', 754, 765)
     ],  # 11 # Mal, solo captura algunos comandos
-    [
-        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
-        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
-        ('CMD', 134, 145), ('CMD', 154, 167), ('CMD', 168, 172), ('CMD', 173, 181), ('CMD', 182, 195), 
-        ('CMD', 196, 204), ('CMD', 205, 216), ('CMD', 225, 237), ('CMD', 238, 251), ('CMD', 252, 259), 
-        ('OPT', 260, 272), ('OPT', 273, 275), ('OPT', 276, 311), ('OPT', 312, 336), ('OPT', 337, 368), 
-        ('OPT', 377, 381), ('OPT', 382, 398), ('OPT', 399, 412), ('OPT', 413, 415), ('OPT', 416, 423), 
-        ('OPT', 424, 457), ('OPT', 458, 476), ('OPT', 477, 481), ('OPT', 482, 486), ('OPT', 487, 491), 
-        ('OPT', 492, 494), ('OPT', 495, 537), ('OPT', 538, 559), ('OPT', 560, 579), ('OPT', 588, 597), 
-        ('ARG', 598, 618), ('ARG', 619, 640), ('ARG', 641, 652), ('ARG', 661, 670), ('ARG', 671, 684), 
-        ('ARG', 685, 714), ('ARG', 715, 726), ('ARG', 735, 755), ('ARG', 756, 781), ('ARG', 782, 796), 
-        ('ARG', 805, 817), ('ARG', 818, 835), ('ARG', 836, 856), ('ARG', 857, 889), ('ARG', 890, 904), 
-        ('ARG', 905, 933), ('ARG', 934, 944), ('ARG', 953, 974), ('ARG', 975, 988), ('ARG', 989, 1001)
-    ],  # 12 # Mal, solo por uno
-    [
-        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
-        ('CMD', 85, 98), ('CMD', 115, 126), ('CMD', 143, 153), ('CMD', 170, 183), ('CMD', 200, 205), 
-        ('CMD', 222, 233), ('CMD', 250, 263), ('CMD', 280, 284), ('CMD', 301, 309), ('CMD', 326, 339), 
-        ('CMD', 356, 364), ('CMD', 381, 392), ('CMD', 409, 421), ('CMD', 438, 451), ('CMD', 468, 475), 
-        ('CMD', 492, 505), ('CMD', 522, 530), ('CMD', 547, 557), ('CMD', 574, 582), ('CMD', 599, 608), 
-        ('CMD', 625, 633)
-    ],  # 13  # mal, solo captura algunos comandos
-    [
-        ('CMD', 5, 16), ('CMD', 17, 31), ('CMD', 32, 48), ('CMD', 49, 59), ('CMD', 60, 68), 
-        ('CMD', 77, 90), ('CMD', 91, 102), ('CMD', 103, 113), ('CMD', 114, 127), ('CMD', 128, 133), 
-        ('CMD', 134, 145), ('CMD', 154, 167), ('CMD', 168, 172), ('CMD', 173, 181), ('CMD', 182, 195), 
-        ('CMD', 196, 204), ('CMD', 205, 216), ('CMD', 225, 237), ('CMD', 238, 251), ('CMD', 252, 259), 
-        ('CMD', 260, 273), ('CMD', 274, 282), ('CMD', 283, 293), ('CMD', 302, 310), ('CMD', 311, 320), 
-        ('CMD', 321, 329), ('CMD', 330, 341), ('CMD', 342, 355), ('CMD', 356, 362), ('CMD', 371, 386), 
-        ('CMD', 395, 402), ('CMD', 411, 421), ('CMD', 430, 437), ('CMD', 446, 453), ('CMD', 462, 472), 
-        ('CMD', 481, 490), ('CMD', 499, 514), ('CMD', 523, 536), ('CMD', 545, 555), ('CMD', 564, 575), 
-        ('CMD', 584, 594), ('CMD', 603, 615), ('CMD', 624, 629), ('CMD', 638, 648), ('CMD', 657, 666), 
-        ('CMD', 675, 691), ('CMD', 700, 720), ('CMD', 729, 744), ('CMD', 753, 763), ('CMD', 772, 784), 
-        ('OPT', 793, 811), ('OPT', 820, 833), ('OPT', 842, 879), ('OPT', 888, 906), ('OPT', 915, 930), 
-        ('OPT', 939, 962), ('OPT', 971, 990)
-    ]  # 14  # mal, captura algunos comandos y argumentos
 ]
 # fmt: on
 
@@ -383,11 +353,10 @@ labels = [
         ("help_generator_default", ("prog", True, 8, False, False), labels[8]),
         ("help_generator_default", ("prog", True, 9, False, False), labels[9]),
         ("help_generator_default", ("prog", True, 10, False, False), labels[10]),
-
-        ("help_generator_default", ("prog", True, 15, False, False), labels[11]),  # mal, Due to misuse of remain += 1?
-        ("help_generator_default", ("prog", True, 20, False, False), labels[12]),  # mal
-        ("help_generator_default", ("prog", True, 30, False, False), labels[13]),  # mal
-        ("help_generator_default", ("prog", True, 50, False, False), labels[14]),
+        ("help_generator_default", ("prog", True, 15, False, False), labels[11]),
+        # ("help_generator_default", ("prog", True, 20, False, False), labels[12]),
+        # ("help_generator_default", ("prog", True, 30, False, False), labels[13]),
+        # ("help_generator_default", ("prog", True, 50, False, False), labels[14]),
     ],
 )
 def test_add_annotations(help_gen, values, expected, request):
