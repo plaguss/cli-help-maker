@@ -17,8 +17,6 @@ usage: ti td sy --ennr-i <e-dme-nyfg> -r <e> [--ynteeao <otd-mso>] [<eic>]
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
@@ -36,23 +34,16 @@ generator = gen.HelpGenerator(
     usage_pattern_capitalized=False,
     number_of_commands=[1, 2],
     number_of_options=[0, 3],
-    option_argument_separator={
-        "separator": False,
-        "required": False,
-    },
-    options_mutually_exclusive={
-        "probability": 7 / 13,
-        "group": [0, 3],
-    },
+    option_argument_separator=False,
+    option_argument_required=False,
+    options_mutually_exclusive_group=[0, 3],
+    options_mutually_exclusive_prob=7/13,
     options_shortcut=False,
     number_of_arguments=1,
-    arguments_same_line=True,
     exclusive_programs=12,
 )
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

@@ -40,8 +40,6 @@ usage: aasn ekoefek -w [--sil] [-m CCGESB-HS]
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
@@ -57,12 +55,9 @@ generator = gen.HelpGenerator(
     options_section=True,
     options_header=False,
     option_documented_prob=1.0,
-    # TODO: This must be together with documented options.
     options_shortcut=False,
-    options_mutually_exclusive={
-        "probability": 3 / 12,
-        "group": [0, 2],
-    },
+    options_mutually_exclusive_group=[0, 2],
+    options_mutually_exclusive_prob=3/13,
     number_of_commands=1,
     number_of_options=[2, 4],
     number_of_arguments=[0, 2],
@@ -71,7 +66,5 @@ generator = gen.HelpGenerator(
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

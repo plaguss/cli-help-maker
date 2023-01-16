@@ -40,10 +40,8 @@ generator = gen.HelpGenerator(
     options_header=False,
     option_documented_prob=1.0,
     options_shortcut=True,
-    option_argument_separator={
-        "separator": True,
-        "required": False,
-    },
+    option_argument_separator=True,
+    option_argument_required=False,
     number_of_commands=1,
     number_of_options=12,
     number_of_arguments=[1, 2],
@@ -51,7 +49,5 @@ generator = gen.HelpGenerator(
 )
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

@@ -32,8 +32,6 @@ usage: ssaeiihe u [options] -- [<reoyrtnsi>] [<bhsyslly>]
 
 """
 
-from rich import print
-
 from cli_help_maker import generator as gen
 from cli_help_maker.utils import highlight_message
 
@@ -51,10 +49,8 @@ generator = gen.HelpGenerator(
     usage_pattern_capitalized=False,
     number_of_commands=1,
     number_of_options=17,
-    option_argument_separator={
-        "separator": True,
-        "required": False,
-    },
+    option_argument_separator=True,
+    option_argument_required=False,
     options_shortcut=True,
     options_style={"style": "between_brackets"},
     number_of_arguments=2,
@@ -62,7 +58,5 @@ generator = gen.HelpGenerator(
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)

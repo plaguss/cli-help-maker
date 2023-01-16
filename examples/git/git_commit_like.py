@@ -23,18 +23,13 @@ generator = gen.HelpGenerator(
     usage_pattern_capitalized=False,
     number_of_commands=1,
     number_of_options=30,
-    option_argument_separator={
-        "separator": True,
-        "required": True,
-    },
+    option_argument_separator=True,
+    option_argument_required=True,
     options_shortcut=True,
     number_of_arguments=1,
-    arguments_same_line=True,
 )
 
 
 if __name__ == "__main__":
-    import json
-
     annot = generator.annotations
-    highlight_message(json.loads(annot))
+    highlight_message(annot)
