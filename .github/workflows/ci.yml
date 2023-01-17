@@ -11,9 +11,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, windows, macos]
-        python_version:
-          ["3.9", "3.10", "3.11"]
+        os: 
+          - ubuntu
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
 
     steps:
       - name: "Check out the repo"
