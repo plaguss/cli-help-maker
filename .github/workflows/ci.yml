@@ -16,6 +16,16 @@ jobs:
           ["3.9", "3.10", "3.11"]
 
     steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v3"
+
+      - name: "Set up Python"
+        uses: "actions/setup-python@v4"
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: pip
+          cache-dependency-path: 'requirements/*.txt'
+
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pip
@@ -23,21 +33,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: actions/checkout@v3
+      - name: "Install dependencies"
+        run: pip install flit nox
 
-      # - uses: actions/setup-python@v4
-      #   name: Install Python ${{ matrix.python_version }}
-      #   with:
-      #     python-version: ${{ matrix.python_version }}
-      #     cache: "pip"
+      - name: "Install package"
+        run: flit install
 
-      - run: pip install flit nox
-      - run: flit install
-      - run: nox --session unit_tests
-      - run: nox --session integration_tests
+      - name: "Download nltk data"
+        run: python -c "import nltk; nltk.download('words')"
 
-      # - uses: codecov/codecov-action@v2
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     file: ./coverage.xml
+      - name: "Run tests"
+        run: |
+          nox --session unit_tests
+          nox --session integration_tests
       
