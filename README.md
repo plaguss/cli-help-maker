@@ -3,6 +3,8 @@ Command Line Interface help message generator.
 
 ![ci workflow](https://github.com/plaguss/cli-help-maker/actions/workflows/ci.yml/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License](https://img.shields.io/badge/github/license/plaguss/cli-help-maker.svg)](https://github.com/plaguss/cli-help-maker)
+
 <!-- [![codecov](https://codecov.io/gh/plaguss/cli-help-maker/branch/main/graph/badge.svg?token=AVKH6TS7G7)](https://codecov.io/gh/plaguss/cli-help-maker) -->
 
 ---
@@ -12,8 +14,7 @@ of the commands, arguments and options. Its created as a separated package, but 
 
 ## What range of help messages covers?
 
-For the moment, it indents to recreate messages like those found in the examples of [docopt-ng]
-(https://github.com/jazzband/docopt-ng).
+For the moment, it indents to recreate messages like those found in the examples of [docopt-ng](https://github.com/jazzband/docopt-ng).
 This should cover CLI apps created in python using for example [argparse](https://docs.python.org/3/library/argparse.html), [click](https://click.palletsprojects.com/en/8.1.x/) or [typer](https://typer.tiangolo.com/)*.
 
 *[typer](https://typer.tiangolo.com/) uses click underneath, but when `rich` its is installed, the message has a special (and prettier) layout, currently not in the scope.*
