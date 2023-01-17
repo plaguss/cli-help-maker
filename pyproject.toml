@@ -9,7 +9,11 @@ authors = [
 ]
 dependencies = [
     "nltk>=3.8",
-    "rich>=12.6.0"
+    "rich>=12.6.0",
+    "ruamel.yaml>=0.17.21",
+    "typer>=0.7.0",
+    "srsly>=2.4.5",
+    "pydantic>=1.10.2"
 ]
 
 license = {file = "LICENSE"}
@@ -32,18 +36,9 @@ dev = [
     "mypy",
     "isort"
 ]
-all = [
-    "ruamel.yaml>=0.17.21",
-    "typer>=0.7.0",
-    "srsly>=2.4.5",
-    "pydantic>=1.10.2"
-]
 
 [project.scripts]
 cli-help-maker = "cli_help_maker.main:app"
 
 [project.urls]
 Source = "https://github.com/plaguss/cli-help-maker"
-
-[tool.pytest]
-addopts = ["--cov=cli_help_maker", "--cov-report html"]
