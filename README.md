@@ -3,7 +3,9 @@ Command Line Interface help message generator.
 
 ![ci workflow](https://github.com/plaguss/cli-help-maker/actions/workflows/ci.yml/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![License](https://img.shields.io/badge/github/license/plaguss/cli-help-maker.svg)](https://github.com/plaguss/cli-help-maker)
+[![License](https://img.shields.io/badge/license/plaguss/cli-help-maker.svg)](https://github.com/plaguss/cli-help-maker/blob/main/LICENSE)
+[![pyversions](https://img.shields.io/pypi/pyversions/cli-help-maker.svg)](https://pypi.python.org/pypi/cli-help-maker)
+
 
 <!-- [![codecov](https://codecov.io/gh/plaguss/cli-help-maker/branch/main/graph/badge.svg?token=AVKH6TS7G7)](https://codecov.io/gh/plaguss/cli-help-maker) -->
 
@@ -23,7 +25,7 @@ A proper list of items covered is yet to be made.
 
 ## Installation
 
-(Once in PyPI, currently not uploaded):
+It can be installed directly from PyPI:
 
 `pip install cli-help-maker`
 
