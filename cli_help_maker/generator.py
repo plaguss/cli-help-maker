@@ -613,35 +613,30 @@ class HelpGenerator:
             ]
             return
 
-        print("original annotations", annotations)
-        # TODO: Check what autojunk does
+        # Obtain the blocks which allow to place the annotations
+        # generated in the original program on the "filled" program
         blocks = list(
             difflib.SequenceMatcher(a=program, b=filled_program, autojunk=False).get_matching_blocks()
         )[:-1]
-        print("BLOCKS", blocks)
-        print("original")
-        print(program)
-        print("filled")
-        print(filled_program)
 
-        remain = 0  # Variable to avoid checking again blocks
-        inc = 0
+        remain = 0  # Variable to avoid checking again blocks in the inner block.
+        inc = 0  # increment in the positions from the original program to the filled one.
         # TODO: New variable to control the positions of the blocks,
         # it is used when in a given line we have to access the following block
         j = 0
         for label, start, end in annotations:
             for i, b in enumerate(blocks[remain:]):
-                # print("remaining blocks:", len(blocks[remain:]))
                 if b.a == b.b == 0:
                     # Corresponds to the first line of a program, doesn't need adjustment
                     if end <= (b.size + initial_length):
                         # Example: (start 9, end 15) Match(a=0, b=0, size=78)
-                        print(
-                            "first block",
-                            (start, end),
-                            b,
-                            program[(start - initial_length) : (end - initial_length)],
-                        )
+                        # The following print is just let for possible debugging
+                        # print(
+                        #     "first block",
+                        #     (start, end),
+                        #     b,
+                        #     program[(start - initial_length) : (end - initial_length)],
+                        # )
                         self._annotations.append((label, start, end))
 
                     elif (start <= (b.size + initial_length)) and (
@@ -651,20 +646,9 @@ class HelpGenerator:
                         # element which spans for more than one line)
                         # Adjusts for the indentation added, and grabs the next block
                         # Example: (start 77, end 110) Match(a=0, b=0, size=78)
-                        print("current_block, next obtained: ", b, blocks[j + 1])
-                        b = blocks[j + 1]
-                        inc = b.b - b.a  # - 1  # Add one for the \n ?
-                        # b = blocks[i + 1]
-                        # inc += b.b - b.a
-                        print(
-                            "first block and second",
-                            (start, end),
-                            (start, end + inc),
-                            b,
-                            filled_program[
-                                (start - initial_length) : (end + inc - initial_length)
-                            ],
-                        )
+                        idx = j if (j + 1) >= len(blocks) else (j+1)
+                        b = blocks[idx]
+                        inc = b.b - b.a
                         self._annotations.append((label, start, end + inc))
                         remain += 1
                         j += 1
@@ -675,21 +659,10 @@ class HelpGenerator:
                         # and the end of the span, as this one pertains completely
                         # to a single line
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        print("current_block, next obtained: ", b, blocks[j + 1])
-                        b = blocks[j + 1]
+                        # To avoid requesting a block over the last one
+                        idx = j if (j + 1) >= len(blocks) else (j+1)
+                        b = blocks[idx]
                         inc = b.b - b.a
-                        # b = blocks[i + 1]
-                        # inc += b.b - b.a
-                        print(
-                            "first next block",
-                            (start, end),
-                            (start + inc, end + inc),
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
                         j += 1
@@ -701,100 +674,32 @@ class HelpGenerator:
                     if (start > b.a + initial_length) and (
                         end <= (b.a + b.size + initial_length)
                     ):
-                        # if (start > b.a) and (end <= (b.b + b.size)):
                         # General case
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        print(
-                            "second plus block",
-                            (start, end),
-                            (start + inc, end + inc),
-                            b,
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
                         self._annotations.append((label, start + inc, end + inc))
 
-                    # FIXME: DEBE APLICAR CADA Match A LA POSICIÓN CORRESPONDIENTE?
-                    # ACTUALMENTE: 
-                    # Bien: (240, 253) (266, 279) Match(a=194, b=220, size=62)
-                    # Mal: (254, 277) (280, 312) Match(a=68, b=76, size=61)
-                    # FIXME: The two following blocks have problems
-                    # Sometimes this block needs one more position on the annotation
-                    # and the next one needs one less, but cannot find the
-                    # reason to do this
-                    # FIXME: This is the new
-                    # elif (start > b.a + initial_length) and (
-                    #     end > (b.a + b.size + initial_length)
-                    # ):
-                    # FIXME: This is the actual one
-                    # elif (start > b.a + initial_length) and (
                     elif (start <= b.a + b.size + initial_length) and (
                         end > (b.a + b.size + initial_length)
                     ):
-                        # FIXME: Ocurre lo siguiente en algún caso
-                        # current_block, next obtained:  Match(a=194, b=220, size=62) Match(a=68, b=76, size=61)
-                        # Starts in a line and continues to the next
-                        print("current_block, next obtained: ", b, blocks[j + 1])
-                        # NEW: The blocks are not properly taken
-                        # b = blocks[i + 1]
-                        # old_inc = inc
-                        # inc += b.b - b.a  # + 1
                         old_inc = inc
                         b = blocks[j + 1]
-                        inc = b.b - b.a  # - 1  # Add one for the \n ?
-                        # TODO: NEW
-                        # Once entered in this block, we add 1 to the increment, due to the \n
-                        # of a new line?
-                        # inc += 1
-                        print(
-                            "second plus between blocks",
-                            (start, end),
-                            (start + old_inc, end + inc),
-                            b,
-                            f"'{filled_program[(start + old_inc - initial_length) : (end + inc - initial_length)]}'",
-                            f"'{program[(start - initial_length) : (end - initial_length)]}'",
-                        )
+                        inc = b.b - b.a
                         self._annotations.append((label, start + old_inc, end + inc))
                         remain += 1
                         j += 1
 
-
                     else:
-                        # elif (start > b.a + initial_length) and (end > (b.a + b.size + initial_length)):
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
-                        if (j + 1) >= len(blocks):  # We cant go to the next block here
-                            idx = j
-                        else:
-                            idx = j + 1
-                        print("current_block, next obtained: ", b, blocks[idx])
+                        # To avoid requesting a block over the last one
+                        idx = j if (j + 1) >= len(blocks) else (j+1)
 
                         b = blocks[idx]
                         inc = b.b - b.a  # - 1  # Add one for the \n ?
-                        # b = blocks[i + 1]
-                        # inc += b.b - b.a  # - 1  # Add one for the \n ?
-                        # inc -= 1
-                        print(
-                            "following block",
-                            (start, end),
-                            (start + inc, end + inc),
-                            b,
-                            filled_program[
-                                (start + inc - initial_length) : (
-                                    end + inc - initial_length
-                                )
-                            ],
-                        )
                         self._annotations.append((label, start + inc, end + inc))
                         remain += 1
                         j += 1
 
                     break
-
-        # if len(annotations) != len(self._annotations):
-        #     raise ValueError("There were missing annotations, the SequenceMatcher failed and must be reviewed.")
 
     def _add_section(
         self,
