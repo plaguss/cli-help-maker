@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches: main
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, windows, macos]
+        python_version:
+          ["3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        name: Install Python ${{ matrix.python_version }}
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: "pip"
+
+      - run: pip install flit nox
+      - run: flit install
+      - run: nox --session unit_tests
+      - run: nox --session integration_tests
+
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+      
