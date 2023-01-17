@@ -240,7 +240,7 @@ def main(
     ),
     output_path: Optional[Path] = typer.Argument(
         None,
-        help="Dirname of the output path. If not given, creates a directr¡iry with the version number",
+        help="Dirname of the output path. If not given, creates a directory with the version number",
     ),
 ):
     """Function to generate a dataset of cli help messages from a .yaml file
