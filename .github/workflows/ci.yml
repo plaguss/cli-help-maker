@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.os }} / ${{ matrix.python_version }}
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -14,7 +14,6 @@ jobs:
         os: 
           - ubuntu
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
 
