@@ -452,6 +452,18 @@ def make_list(elements: int = 2, numbered: bool = False) -> str:
     return "\n".join(content)
 
 
+def make_set(elements: list[str]) -> str:
+    """Creates a set of elements as possible options.
+
+    Args:
+        elements (list[str]): List of elements to be transformed into a set.
+
+    Returns:
+        str: Set of elements to be used as options in a command's option.
+    """
+    return f"{{{', '.join(elements)}}}" if len(elements) > 0 else ""
+
+
 def make_composed_word() -> str:
     """Generator of composed words for arguments, with
     made-up probabilities."""
