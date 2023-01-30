@@ -116,7 +116,7 @@ make_options_args = []
 
 
 @pytest.mark.parametrize(
-    "s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected",
+    "s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, sz, expected",
     [
         (
             True,
@@ -131,6 +131,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-a, --areel-spaniellike",
         ),
         (
@@ -146,6 +147,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-a",
         ),
         (
@@ -161,6 +163,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-a <pterobranchia>",
         ),
         # (False, False, False, 0, 0, " ", "=", ", ", 0, 0, "between_brackets", False, "-a, --areel-spaniellike"),  # returns ''
@@ -178,6 +181,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-A, --areel-spaniellike",
         ),
         (
@@ -193,6 +197,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-a, --Areel-spaniellike",
         ),
         (
@@ -208,6 +213,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-A, --Areel-spaniellike",
         ),
         (
@@ -223,6 +229,7 @@ make_options_args = []
             1,
             "between_brackets",
             False,
+            0,
             "-a, --areel-spaniellike",
         ),  # repeated with previous
         (
@@ -238,6 +245,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-A, --Areel-spaniellike",
         ),  # repeated with previous
         (
@@ -253,6 +261,7 @@ make_options_args = []
             1,
             "between_brackets",
             False,
+            0,
             "-A, --Areel-spaniellike",
         ),
         (
@@ -268,6 +277,7 @@ make_options_args = []
             0,
             "between_brackets",
             False,
+            0,
             "-a, --areel-spaniellike",
         ),
         (
@@ -283,6 +293,7 @@ make_options_args = []
             0,
             "all_caps",
             False,
+            0,
             "-a PTEROBRANCHIA",
         ),
         (
@@ -298,6 +309,7 @@ make_options_args = []
             0,
             "all_caps",
             True,
+            0,
             "-a PTEROBRANCHIA...",
         ),
         (
@@ -313,11 +325,28 @@ make_options_args = []
             0,
             "all_caps",
             True,
+            0,
             "--areel-spaniellike=PTEROBRANCHIA...",
+        ),
+        (
+            False,
+            True,
+            True,
+            0,
+            0,
+            " ",
+            "=",
+            ", ",
+            0,
+            0,
+            "all_caps",
+            True,
+            2,
+            "--areel-spaniellike {tsw, dboi}",
         ),
     ],
 )
-def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected):
+def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, sz, expected):
     random.seed(FIXED_SEED)
     assert (
         ut.make_option(
@@ -333,6 +362,7 @@ def test_make_option(s, l, wv, scp, lcp, ss, ls, sls, pnc, pvc, st, an, expected
             probability_value_cap=pvc,
             style=st,
             any_number=an,
+            set_size=sz
         )
         == expected
     )

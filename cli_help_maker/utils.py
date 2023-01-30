@@ -511,15 +511,12 @@ def make_option(
     probability_value_cap: float = 0,
     style: str = "between_brackets",
     any_number: bool = False,
+    set_size: int = 0,
 ):
     """Optional argument generator.
 
     If short, long and with_value are True, only the short option will be
     generated and returned.
-
-    TODO:
-        Possibilities not developed yet:
-        - Multiple possibilities: [-p | --paginate | -P | --no-pager]
 
     Args:
         short (bool, optional):
@@ -547,9 +544,18 @@ def make_option(
         style (str, optional). Argument passed to make_argument, only applies to
             a value for the option.
         any_number (bool, optional). Argument passed to make_argument.
+        set_size (int, optional).
+            Whether the option has a set of possible values to use, i.e.:
+            --deps {all,production,develop,none}
+            Defaults to 0, not used. If a number is set, only a long
+            option will be used.
     """
     option = ""
     name = capitalize(make_composed_word(), probability=probability_name_cap)
+
+    if set_size > 0:
+        option += f"--{name} " + make_set([make_word() for _ in range(set_size)])
+        return option
 
     # The following block is not covered just to avoid mocking the name
     if len(name) == 1:  # pragma: no cover
