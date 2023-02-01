@@ -417,14 +417,14 @@ def make_list(elements: int = 2, numbered: bool = False) -> str:
         elements (int, optional):
             Number of elements in the list. Defaults to 2.
         numbered (bool, optional):
-            Whether the list is numbered or not. Defaults to False. 
+            Whether the list is numbered or not. Defaults to False.
 
     Notes:
         It can creates list as in markdown.
         Each element would be a sentence. Helper function to create descriptions of
         a program behavior, i.e.
 
-            Usage:   
+            Usage:
             pip install [options] <requirement specifier> [package-index-options] ...
             pip install [options] -r <requirements file> [package-index-options] ...
             pip install [options] [-e] <vcs project url> ...
@@ -433,12 +433,12 @@ def make_list(elements: int = 2, numbered: bool = False) -> str:
 
             Description:
             Install packages from:
-            
+
             - PyPI (and other indexes) using requirement specifiers.
             - VCS project urls.
             - Local project directories.
             - Local or remote source archives.
-            
+
             pip also supports installing from "requirements files", which provide
             an easy way to specify a whole environment to be installed.
     """
@@ -483,8 +483,27 @@ def make_argument(
     capitalized_prob: float = 0.01,
     style: str = "between_brackets",
     any_number: bool = False,
+    nested: bool = False,
 ) -> str:
-    """Currently equivalent to a name, wrapped in <_>."""
+    """Create an argument for a program.
+
+    Args:
+        capitalized_prob (float, optional):
+            Defaults to 0.01.
+        style (str, optional):
+            Defaults to "between_brackets".
+        any_number (bool, optional):
+            Whether to add ... to signify any possible number of args.
+            Defaults to False.
+        nested (bool, optional):
+            Whether to add a nested argument like for example in git push.
+            usage: git push [<options>] [<repository> [<refspec>...]]
+            Only one nested argument is allowed.
+            Defaults to False.
+
+    Returns:
+        str: argument to add to a program.
+    """
     styler = argument_styles.get(style)
     if styler is None:
         warn(f"style not defined: {style}, set by default: 'between_brackets'")
@@ -494,6 +513,9 @@ def make_argument(
 
     if any_number:
         arg += "..."
+
+    if nested:
+        arg += f" {do_optional(make_argument(style=style, any_number=bool(random.randint(0, 1)), nested=False))}"
 
     return arg
 

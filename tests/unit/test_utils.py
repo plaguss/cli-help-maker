@@ -97,19 +97,20 @@ def test_options_shortcut(cp, ac, expected):
 
 
 @pytest.mark.parametrize(
-    "cp, s, an, expected",
+    "cp, s, an, n, expected",
     [
-        (0, "between_brackets", False, "<areel-spaniellike>"),
-        (1, "between_brackets", False, "<Areel-spaniellike>"),
-        (0, "between_brackets", True, "<areel-spaniellike>..."),
-        (0, "all_caps", False, "AREEL-SPANIELLIKE"),
-        (0, "all_caps", True, "AREEL-SPANIELLIKE..."),
-        (0, "undefined", True, "<areel-spaniellike>..."),
+        (0, "between_brackets", False, False, "<areel-spaniellike>"),
+        (1, "between_brackets", False, False, "<Areel-spaniellike>"),
+        (0, "between_brackets", True, False, "<areel-spaniellike>..."),
+        (0, "all_caps", False, False, "AREEL-SPANIELLIKE"),
+        (0, "all_caps", True, False, "AREEL-SPANIELLIKE..."),
+        (0, "undefined", True, False, "<areel-spaniellike>..."),
+        (0, "undefined", False, True, "<areel-spaniellike> [<deacetylate-spiritland>]"),
     ],
 )
-def test_make_argument(cp, s, an, expected):
+def test_make_argument(cp, s, an, n, expected):
     random.seed(FIXED_SEED)
-    assert ut.make_argument(capitalized_prob=cp, style=s, any_number=an) == expected
+    assert ut.make_argument(capitalized_prob=cp, style=s, any_number=an, nested=n) == expected
 
 
 make_options_args = []
