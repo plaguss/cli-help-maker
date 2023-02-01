@@ -89,6 +89,16 @@ arguments:
     parameters:
       min: 0
       max: 1
+  argument_any_number_prob:
+    dist: uniform-continuous
+    parameters:
+      min: 0
+      max: 0.5
+  argument_nested_prob:
+    dist: uniform-continuous
+    parameters:
+      min: 0
+      max: 0.5
   argument_optional_prob:
     dist: uniform-continuous
     parameters:
