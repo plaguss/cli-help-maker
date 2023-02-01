@@ -225,6 +225,8 @@ def argument_generator(
             "options_mutually_exclusive_prob": input_generator[
                 "options_mutually_exclusive_prob"
             ](),
+            "option_set_size": input_generator["option_set_size"](),
+            "option_set_size_prob": input_generator["option_set_size_prob"](),
             "number_of_commands": input_generator["number_of_commands"](),
             "number_of_arguments": input_generator["number_of_arguments"](),
             "number_of_options": input_generator["number_of_options"](),

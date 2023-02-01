@@ -78,6 +78,8 @@ class HelpGenerator:
         option_argument_required: bool = False,
         options_mutually_exclusive_prob: float = 0.0,
         options_mutually_exclusive_group: int = 0,
+        option_set_size: int | list[int] = 0,
+        option_set_size_prob: float = 0.,
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: float = 0,
         options_shortcut_capitalized_prob: float = 0.001,
@@ -122,8 +124,16 @@ class HelpGenerator:
                 be determined via the probability of the elements being optional.
                 A list with a range of [0, 2] means at most 2 elements could
                 be grouped.
-            options_style (dict). Used to pass determined options' arguments instead
+            options_style (dict): Used to pass determined options' arguments instead
                 of taking them randomly.
+            option_set_size (int | list[int]):
+                Some options can have a set of allowed options to choose.
+                i.e. [--deps {all,production,develop,none}]
+                If an int is given, every option will have the same number of
+                values, if a list is given, the interpretation is the same
+                used for number_of_commands. Defaults to 0.
+            option_set_size_prob (float): 
+                Probability of the options actually being used.
             exclusive_programs (int): Number of exclusive programs, according
                 to the usage pattern. When only one is given, a single program
                 definition occurs. Used to differentiate between different subcommands
@@ -174,6 +184,10 @@ class HelpGenerator:
         self._options_shortcut = random.random() > (1 - options_shortcut)
         self._options_shortcut_capitalized_prob = options_shortcut_capitalized_prob
         self._options_shortcut_all_caps = options_shortcut_all_caps
+
+        l, h = self._check_number_of_elements(option_set_size)
+        self._option_set_size = lambda: random.randint(l, h)
+        self._option_set_size_prob = option_set_size_prob
 
         self._exclusive_group_optional_prob = exclusive_group_optional_prob
         # Program description probability
@@ -319,6 +333,7 @@ class HelpGenerator:
             {
                 "short_capitalized_prob": 0.1,
                 "long_capitalized_prob": 0,
+                "set_size": self._option_set_size() if (1 - random.random()) > self._option_set_size_prob else 0
             },
             **kwargs,
         )
