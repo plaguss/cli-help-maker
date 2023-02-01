@@ -44,3 +44,6 @@ cli-help-maker = "cli_help_maker.main:app"
 
 [project.urls]
 Source = "https://github.com/plaguss/cli-help-maker"
+
+[tool.scriv]
+format = "md"
