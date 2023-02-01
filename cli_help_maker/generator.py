@@ -17,6 +17,8 @@ from .utils import (
     make_list,
     make_option,
     make_paragraph,
+    add_comma,
+    update_paragraph,
     maybe_do_optional,
     options_shortcut,
     section_pattern,
@@ -834,6 +836,11 @@ class HelpGenerator:
                 subsequent_indent=" " * subsequent_indent,
             )
             docs = make_paragraph()
+            # Add the same element as an example to the docs with with 10% probability.
+            if random.random() < 0.1:
+                el = add_comma(element, style="single") if random.random() > 0.5 else element
+                docs = update_paragraph(docs, element=el)
+
             pieces = wp.wrap(docs)
             # TODO: Not controlled yet
             # To control the length of the first line,

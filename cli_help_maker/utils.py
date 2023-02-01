@@ -438,6 +438,23 @@ def make_paragraph(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
     )
 
 
+def update_paragraph(description: str, element: str) -> str:
+    """Add an element to a description paragraph.
+
+    Helper function to simplify inserting an example in a given paragraph.
+
+    Args:
+        description (str): Text obtained from make_paragraph.
+        element (str): Element to be inserted in the paragraph.
+
+    Returns:
+        str: The original text with the element added in between
+    """
+    text = description.split(" ")
+    text.insert(random.randint(0, len(text)), element)
+    return " ".join(text)
+
+
 def make_list(elements: int = 2, numbered: bool = False) -> str:
     """Creates a list of elements.
 
