@@ -208,6 +208,8 @@ def argument_generator(
             ](),
             "argument_capitalized_prob": input_generator["argument_capitalized_prob"](),
             "argument_optional_prob": input_generator["argument_optional_prob"](),
+            "argument_any_number_prob": input_generator["argument_any_number_prob"](),
+            "argument_nested_prob": input_generator["argument_nested_prob"](),
             "options_section": input_generator["options_section"](),
             "options_header": input_generator["options_header"](),
             "option_documented_prob": input_generator["option_documented_prob"](),

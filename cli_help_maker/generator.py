@@ -69,6 +69,8 @@ class HelpGenerator:
         arguments_pattern_capitalized: str = True,
         argument_capitalized_prob: float = 0,
         argument_optional_prob: float = 0.5,
+        argument_any_number_prob: float = 0.0,
+        argument_nested_prob: float = 0.0,
         options_style: dict = {},
         options_section: bool = False,
         options_header: bool = False,
@@ -113,6 +115,12 @@ class HelpGenerator:
             arguments_in_section (bool, optional): If True, writes the arguments
                 on its own section, otherwise they are written as single
                 line programs. Defaults to False
+            argument_any_number_prob (float):
+                Probability of having the an argument with any number of
+                possibilities. Defaults to 0.0
+            argument_nested_prob (float):
+                Probability of having an argument with another nested argument.
+                Defaults to 0.0.
             option_documented_prob (float): Probability of documenting each
                 option. Defaults to 0.9.
             options_mutually_exclusive (dict[str, float | int])
@@ -170,6 +178,9 @@ class HelpGenerator:
         self._arguments_pattern_capitalized = arguments_pattern_capitalized
         self._argument_capitalized_prob = argument_capitalized_prob
         self._argument_optional_prob = argument_optional_prob
+
+        self._argument_any_number_prob = argument_any_number_prob
+        self._argument_nested_prob = argument_nested_prob
 
         self._options_section = options_section
         self._options_header = options_header
@@ -408,6 +419,8 @@ class HelpGenerator:
         arg = make_argument(
             capitalized_prob=0,
             style=self._arguments_style,
+            any_number=True if (1 - random.random()) < self._argument_any_number_prob else False,
+            nested=True if (1 - random.random()) < self._argument_nested_prob else False
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
@@ -415,6 +428,8 @@ class HelpGenerator:
             arg = make_argument(
                 capitalized_prob=0,
                 style=self._arguments_style,
+                any_number=True if (1 - random.random()) < self._argument_any_number_prob else False,
+                nested=True if (1 - random.random()) < self._argument_nested_prob else False
             )
 
         self._argument_names.append(arg)
