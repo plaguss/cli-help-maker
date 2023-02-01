@@ -146,6 +146,16 @@ arguments:
     parameters:
       min: 0
       max: 6
+  option_set_size:
+    dist: uniform-discrete
+    parameters:
+      min: 0
+      max: 4
+  option_set_size_prob:
+    dist: uniform-continuous
+    parameters:
+      min: 0
+      max: 0.5
   number_of_commands:
     dist: custom
     parameters:
