@@ -304,6 +304,23 @@ def do_mutually_exclusive_groups(
     return new_elements
 
 
+def add_comma(element: str, style: str = "single") -> str:
+    """Add commas to a word.
+
+    Args:
+        element (str): Word
+        style (str, optional): Style of the comma, 'single' or 'double'.
+            Defaults to "single".
+
+    Returns:
+        str: A word wrapped in commas
+    """
+    if style == "single":
+        return f"'{element}'"
+    else:
+        return f'"{element}"'
+
+
 def options_shortcut(
     capitalized_probability: float = 0.0, all_caps: bool = False
 ) -> str:
@@ -371,8 +388,11 @@ def make_word() -> str:
     return "".join(random.choices(LETTERS, weights=LETTER_FREQUENCIES, k=word_length()))
 
 
-def make_sentence(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
+def make_sentence(use_statistics: bool = TEXT_FROM_STATISTICS, between_commas_prob: float = 0.05) -> str:
     """Creates a sentence.
+
+    There is a probability of a 5% of a word being between commas
+    randomnly selected as single or double commas.
 
     Args:
         use_statistics (bool, optional):
@@ -383,8 +403,16 @@ def make_sentence(use_statistics: bool = TEXT_FROM_STATISTICS) -> str:
         str: made up sentence to fill the messages with content.
     """
     gen = make_word if use_statistics else get_word
+    [gen() for _ in range(sentence_length())]
+    wrds = []
+    style = "single" if (1 - random.random()) < 0.25 else "double"
+    for _ in range(sentence_length()):
+        w = gen()
+        if (1 - random.random()) < between_commas_prob:
+            w = add_comma(w, style=style)
+        wrds.append(w)
     return capitalize(
-        " ".join([gen() for _ in range(sentence_length())]), probability=1
+        " ".join(wrds), probability=1
     )
 
 
