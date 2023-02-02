@@ -83,7 +83,7 @@ class HelpGenerator:
         options_mutually_exclusive_prob: float = 0.0,
         options_mutually_exclusive_group: int = 0,
         option_set_size: int | list[int] = 0,
-        option_set_size_prob: float = 0.,
+        option_set_size_prob: float = 0.0,
         read_from_stdin: bool = False,  # TODO: Not taken into account yet
         options_shortcut: float = 0,
         options_shortcut_capitalized_prob: float = 0.001,
@@ -142,7 +142,7 @@ class HelpGenerator:
                 If an int is given, every option will have the same number of
                 values, if a list is given, the interpretation is the same
                 used for number_of_commands. Defaults to 0.
-            option_set_size_prob (float): 
+            option_set_size_prob (float):
                 Probability of the options actually being used.
             exclusive_programs (int): Number of exclusive programs, according
                 to the usage pattern. When only one is given, a single program
@@ -346,7 +346,9 @@ class HelpGenerator:
             {
                 "short_capitalized_prob": 0.1,
                 "long_capitalized_prob": 0,
-                "set_size": self._option_set_size() if (1 - random.random()) > self._option_set_size_prob else 0
+                "set_size": self._option_set_size()
+                if random.random() > (1 - self._option_set_size_prob)
+                else 0,
             },
             **kwargs,
         )
@@ -421,8 +423,12 @@ class HelpGenerator:
         arg = make_argument(
             capitalized_prob=0,
             style=self._arguments_style,
-            any_number=True if (1 - random.random()) < self._argument_any_number_prob else False,
-            nested=True if (1 - random.random()) < self._argument_nested_prob else False
+            any_number=True
+            if (1 - random.random()) < self._argument_any_number_prob
+            else False,
+            nested=True
+            if (1 - random.random()) < self._argument_nested_prob
+            else False,
         )
         # if the name was already generated (it can happen statistically...)
         # try again, just once and expect it doesn't happen again.
@@ -430,8 +436,12 @@ class HelpGenerator:
             arg = make_argument(
                 capitalized_prob=0,
                 style=self._arguments_style,
-                any_number=True if (1 - random.random()) < self._argument_any_number_prob else False,
-                nested=True if (1 - random.random()) < self._argument_nested_prob else False
+                any_number=True
+                if (1 - random.random()) < self._argument_any_number_prob
+                else False,
+                nested=True
+                if (1 - random.random()) < self._argument_nested_prob
+                else False,
             )
 
         self._argument_names.append(arg)
@@ -648,11 +658,15 @@ class HelpGenerator:
         # Obtain the blocks which allow to place the annotations
         # generated in the original program on the "filled" program
         blocks = list(
-            difflib.SequenceMatcher(a=program, b=filled_program, autojunk=False).get_matching_blocks()
+            difflib.SequenceMatcher(
+                a=program, b=filled_program, autojunk=False
+            ).get_matching_blocks()
         )[:-1]
 
         remain = 0  # Variable to avoid checking again blocks in the inner block.
-        inc = 0  # increment in the positions from the original program to the filled one.
+        inc = (
+            0  # increment in the positions from the original program to the filled one.
+        )
         # TODO: New variable to control the positions of the blocks,
         # it is used when in a given line we have to access the following block
         j = 0
@@ -678,7 +692,7 @@ class HelpGenerator:
                         # element which spans for more than one line)
                         # Adjusts for the indentation added, and grabs the next block
                         # Example: (start 77, end 110) Match(a=0, b=0, size=78)
-                        idx = j if (j + 1) >= len(blocks) else (j+1)
+                        idx = j if (j + 1) >= len(blocks) else (j + 1)
                         b = blocks[idx]
                         inc = b.b - b.a
                         self._annotations.append((label, start, end + inc))
@@ -692,7 +706,7 @@ class HelpGenerator:
                         # to a single line
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         # To avoid requesting a block over the last one
-                        idx = j if (j + 1) >= len(blocks) else (j+1)
+                        idx = j if (j + 1) >= len(blocks) else (j + 1)
                         b = blocks[idx]
                         inc = b.b - b.a
                         self._annotations.append((label, start + inc, end + inc))
@@ -723,7 +737,7 @@ class HelpGenerator:
                     else:
                         # Example: (start 86, end 99) Match(a=0, b=0, size=78)
                         # To avoid requesting a block over the last one
-                        idx = j if (j + 1) >= len(blocks) else (j+1)
+                        idx = j if (j + 1) >= len(blocks) else (j + 1)
 
                         b = blocks[idx]
                         inc = b.b - b.a  # - 1  # Add one for the \n ?
@@ -838,7 +852,11 @@ class HelpGenerator:
             docs = make_paragraph()
             # Add the same element as an example to the docs with with 10% probability.
             if random.random() < 0.1:
-                el = add_comma(element, style="single") if random.random() > 0.5 else element
+                el = (
+                    add_comma(element, style="single")
+                    if random.random() > 0.5
+                    else element
+                )
                 docs = update_paragraph(docs, element=el)
 
             pieces = wp.wrap(docs)
@@ -912,7 +930,7 @@ class HelpGenerator:
             elements_header,
             elements_capitalized,
             elements_doc_prob,
-        ): # pragma: no cover
+        ):  # pragma: no cover
             if section_name == "commands":
                 f = self._commands
                 kwargs = {"total": number_of_elements}
