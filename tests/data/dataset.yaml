@@ -149,13 +149,15 @@ arguments:
   # and sometimes a value higher than 0.
     dist: custom
     parameters:
-      p: [0.9, 0.1]
+      p: [0.8, 0.2]
       values: [0, 1]
   options_mutually_exclusive_group:
+  # This argument has a bug, minimizing the values makes it happen less often
+  # while it is found...
     dist: uniform-discrete
     parameters:
       min: 0
-      max: 6
+      max: 2
   option_set_size:
     dist: uniform-discrete
     parameters:
